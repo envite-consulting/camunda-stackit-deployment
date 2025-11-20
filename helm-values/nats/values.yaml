@@ -1,0 +1,10 @@
+config:
+  cluster:
+    enabled: true
+    replicas: 1
+
+podTemplate:
+  topologySpreadConstraints:
+    kubernetes.io/hostname:
+      maxSkew: 1
+      whenUnsatisfiable: ScheduleAnyway

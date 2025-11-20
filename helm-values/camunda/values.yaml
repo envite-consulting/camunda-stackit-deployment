@@ -1,0 +1,68 @@
+#
+# This values file is used for local development and testing.
+# It disables some features and reduces the resource requirements to run the Camunda Platform locally.
+#
+global:
+  identity:
+    auth:
+      # Disable the Identity authentication for local development
+      # it will fall back to basic-auth: demo/demo as default user
+      enabled: false
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: "camunda8.stackit.gg"
+    tls:
+      enabled: true
+      secretName: "camunda8-tls"
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-production"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+#
+# Management Cluster.
+#
+
+identity:
+  enabled: false
+
+identityKeycloak:
+  enabled: false
+
+#
+# Orchestration Cluster.
+#
+
+operate:
+  contextPath: "/operate"
+
+tasklist:
+  contextPath: "/tasklist"
+
+connectors:
+  inbound:
+    mode: disabled
+
+zeebeGateway:
+  ingress:
+    enabled: true
+    className: nginx
+    host: "zeebe.camunda8.stackit.gg"
+
+orchestration:
+  contextPath: "/orchestrate"
+  replicas: 1
+  clusterSize: "1"
+  partitionCount: "1"
+  replicationFactor: "1"
+  pvcSize: 10Gi
+
+optimize:
+  enabled: false
+
+elasticsearch:
+  master:
+    replicaCount: 1
+    persistence:
+      size: 10Gi
