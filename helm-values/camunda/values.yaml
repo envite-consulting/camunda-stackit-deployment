@@ -1,57 +1,102 @@
-#
-# This values file is used for local development and testing.
-# It disables some features and reduces the resource requirements to run the Camunda Platform locally.
-#
 global:
-  identity:
-    auth:
-      # Disable the Identity authentication for local development
-      # it will fall back to basic-auth: demo/demo as default user
-      enabled: false
+
+  security:
+    authentication:
+      method: 'oidc'
+
   ingress:
     enabled: true
-    className: "nginx"
-    host: "camunda8.stackit.gg"
+    className: 'nginx'
+    annotations:
+      cert-manager.io/cluster-issuer: 'letsencrypt-production'
+    host: 'camunda8.stackit.gg'
     tls:
       enabled: true
-      secretName: "camunda8-tls"
-    annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-production"
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      secretName: 'camunda8-tls'
 
-#
-# Management Cluster.
-#
+  identity:
+    keycloak:
+      url:
+        protocol: 'http'
+        host: 'camunda-keycloak-service.keycloak.svc.cluster.local'
+        port: 8080
+      contextPath: '/'
+      realm: '/realms/camunda-platform'
+      auth:
+        adminUser: 'temp-admin'
+        existingSecret: 'identity-secret-for-components'
+        existingSecretKey: 'identity-keycloak-admin-password'
+    auth:
+      enabled: true
+      publicIssuerUrl: 'https://keycloak.camunda8.stackit.gg/realms/camunda-platform'
+      authUrl: 'https://keycloak.camunda8.stackit.gg/realms/camunda-platform/protocol/openid-connect/auth'
+
+      issuerBackendUrl: 'http://camunda-keycloak-service.keycloak.svc.cluster.local:8080/realms/camunda-platform'
+      tokenUrl: 'http://camunda-keycloak-service.keycloak.svc.cluster.local:8080/realms/camunda-platform/protocol/openid-connect/token'
+      jwksUrl: 'http://camunda-keycloak-service.keycloak.svc.cluster.local:8080/realms/camunda-platform/protocol/openid-connect/certs'
+      admin:
+        secret:
+          existingSecret: 'identity-secret-for-components'
+          existingSecretKey: 'identity-admin-client-token'
+      identity:
+        clientId: 'camunda-identity'
 
 identity:
-  enabled: false
+  enabled: true
+  firstUser:
+    enabled: true
+    username: 'admin'
+    email: 'test@test.de'
+    firstName: 'Admin'
+    lastName: 'User'
+    secret:
+      existingSecret: 'identity-secret-for-components'
+      existingSecretKey: 'identity-first-user-password'
+  fullURL: 'https://camunda8.stackit.gg/managementidentity'
+  contextPath: '/identity'
 
-identityKeycloak:
-  enabled: false
-
-#
-# Orchestration Cluster.
-#
-
-operate:
-  contextPath: "/operate"
-
-tasklist:
-  contextPath: "/tasklist"
+identityPostgresql:
+  enabled: true
+  auth:
+    existingSecret: 'identity-secret-for-components'
+    secretKeys:
+      adminPasswordKey: 'identity-keycloak-postgresql-admin-password'
+      userPasswordKey: 'identity-keycloak-postgresql-user-password'
 
 connectors:
-  inbound:
-    mode: disabled
-
-zeebeGateway:
-  ingress:
-    enabled: true
-    className: nginx
-    host: "zeebe.camunda8.stackit.gg"
+  contextPath: '/connectors'
+  security:
+    authentication:
+      oidc:
+        secret:
+          existingSecret: 'identity-secret-for-components'
+          existingSecretKey: 'identity-connectors-client-token'
 
 orchestration:
-  contextPath: "/orchestrate"
+  contextPath: "/"
+  security:
+    authentication:
+      oidc:
+        secret:
+          existingSecret: 'identity-secret-for-components'
+          existingSecretKey: 'identity-orchestration-client-token'
+        redirectUrl: 'https://camunda8.stackit.gg'
+    initialization:
+      defaultRoles:
+        admin:
+          users:
+            - admin
+  ingress:
+    grpc:
+      enabled: true
+      className: 'nginx'
+      annotations:
+        cert-manager.io/cluster-issuer: 'letsencrypt-production'
+      host: 'zeebe.camunda8.stackit.gg'
+      tls:
+        enabled: true
+        secretName: 'camunda8-zeebe-grpc-tls'
+
   replicas: 1
   clusterSize: "1"
   partitionCount: "1"
@@ -60,6 +105,7 @@ orchestration:
 
 optimize:
   enabled: false
+
 
 elasticsearch:
   master:
