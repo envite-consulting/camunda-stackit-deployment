@@ -1,0 +1,31 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+actor Client as client
+
+cloud STACKIT {
+  component Kubernetes <<SKE>> as ske {
+      port Ingress as ske.ingress
+      component "Camunda Cluster" <<Self Managed Helm Chart>> as ske.camunda
+      component Keycloak <<Keycloak Operator>> as ske.keycloak
+
+  }
+  component Postgres <<SaaS>> as postgres
+  component OpenSearch <<SaaS>> as os
+  component S3 <<SaaS>> as s3
+
+  ske.camunda --> postgres
+  ske.camunda --> os
+  ske.camunda --> s3
+  ske.camunda -> ske.keycloak
+  ske.ingress --> ske.keycloak
+  ske.ingress --> ske.camunda
+
+
+}
+
+client --> ske.ingress
+
+
+
+@enduml
