@@ -1,5 +1,4 @@
 global:
-
   security:
     authentication:
       method: 'oidc'
@@ -14,6 +13,21 @@ global:
       enabled: true
       secretName: 'camunda8-tls'
 
+  elasticsearch:
+    enabled: false
+
+  opensearch:
+    enabled: true
+    auth:
+      username: a9s61cfc761273b10a5eb27a78c347e6f872b92f48d
+      secret:
+        existingSecret: opensearch-credentials
+        existingSecretKey: password
+    url:
+      protocol: https
+      host: sed1e8ef-0.data.eu01.onstackit.cloud
+      port: 49458
+
   identity:
     keycloak:
       url:
@@ -25,7 +39,7 @@ global:
       auth:
         adminUser: 'temp-admin'
         existingSecret: 'identity-secret-for-components'
-        existingSecretKey: 'identity-keycloak-admin-password'
+        existingSecretKey: 'identity-admin-client-token'
     auth:
       enabled: true
       publicIssuerUrl: 'https://keycloak.camunda8.stackit.gg/realms/camunda-platform'
@@ -54,14 +68,6 @@ identity:
       existingSecretKey: 'identity-first-user-password'
   fullURL: 'https://camunda8.stackit.gg/managementidentity'
   contextPath: '/identity'
-
-identityPostgresql:
-  enabled: true
-  auth:
-    existingSecret: 'identity-secret-for-components'
-    secretKeys:
-      adminPasswordKey: 'identity-keycloak-postgresql-admin-password'
-      userPasswordKey: 'identity-keycloak-postgresql-user-password'
 
 connectors:
   contextPath: '/connectors'
@@ -108,7 +114,4 @@ optimize:
 
 
 elasticsearch:
-  master:
-    replicaCount: 1
-    persistence:
-      size: 10Gi
+  enabled: false
