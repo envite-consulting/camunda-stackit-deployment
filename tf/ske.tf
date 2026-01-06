@@ -1,7 +1,7 @@
 resource "stackit_ske_cluster" "camunda8" {
   project_id             = var.project_id
   name                   = "camunda8"
-  kubernetes_version_min = "1.33.5"
+  kubernetes_version_min = "1.34.2"
   node_pools = [
     {
       name               = "pool1"
