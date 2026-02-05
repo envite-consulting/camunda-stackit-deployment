@@ -9,12 +9,6 @@ und Best Practices für STACKIT.
 
 ---
 
-# Manuelle Anleitung – Ist-Zustand
-
-> Status: funktional, aber stark manuell; Ausgangspunkt für spätere Automatisierung
-
----
-
 ## Lokale Voraussetzungen
 
 ### 0.1 Terraform installieren
@@ -51,6 +45,17 @@ stackit config set --project-id PROJECTx-IDyy-zzzz-aaaa-DUMMYbbbbbbb
 Dokumentation:
 [Create a Service Account](https://docs.stackit.cloud/stackit/en/create-a-service-account-134415839.html)
 
+> [!WARNING]
+> Falls im Team bereits ein Service Account existiert, **muss kein neuer Service Account erstellt werden**.  
+> In diesem Fall wird das **bereits vorhandene `sa_key.json`** verwendet.
+>
+> Voraussetzungen:
+> - Zugriff auf das bestehende `sa_key.json`
+> - Datei liegt lokal vor
+> - Datei ist in `.gitignore` eingetragen
+
+#### Neuen Service Account erstellen
+
 ```bash
 stackit service-account create --name terraform
 ```
@@ -68,6 +73,15 @@ stackit project member add terraform-<SERVICE_ACCOUNT_ID>@sa.stackit.cloud --rol
 ---
 
 ## Terraform Backend (STACKIT Object Storage / S3)
+
+> [!WARNING]
+> Falls der Object Storage, der Bucket und die Credentials Group bereits für dieses Projekt existieren, **müssen diese Schritte nicht erneut durchgeführt werden**.  
+> In diesem Fall kann direkt die bestehende Konfiguration für das Terraform Backend verwendet werden.
+>
+> Voraussetzungen:
+> - Zugriff auf bestehende Bucket- und Credential-Daten
+> - Lokale Datei `config.s3.tfbackend` ist vorhanden oder kann anhand bestehender Keys erstellt werden
+> - Alle sensiblen Daten sind in `.gitignore` eingetragen
 
 ### 2.1 Object Storage aktivieren
 
@@ -137,12 +151,24 @@ terraform plan
 terraform apply
 ```
 
-Ergebnis (implizit):
+Ergebnis:
 
+Laufende Instanzen von:
 * SKE Cluster
 * Postgres
 * OpenSearch
-* Outputs (Credentials, Endpoints)
+* Secrets Manager
+* Keycloak
+* Camunda 8
+
+### 3.2 Aufräumen / Ressourcen löschen:
+
+```bash
+terraform destroy
+```
+
+> [!IMPORTANT]
+> terraform destroy löscht alle oben aufgeführten Instanzen und kann nicht rückgängig gemacht werden.
 
 ---
 
@@ -157,196 +183,8 @@ stackit ske cluster list
 ### 4.2 kubeconfig erzeugen
 
 ```bash
-stackit ske kubeconfig create camunda8 --login
+stackit ske kubeconfig create camunda --login
 ```
-
----
-
-## Plattform-Komponenten via Helm
-
-### 5.1 ingress-nginx
-
-```bash
-helm upgrade ingress-nginx ingress-nginx/ingress-nginx \
-  --install \
-  --namespace ingress-nginx \
-  --create-namespace \
-  --version 4.12.1 \
-  --values helm-values/ingress-nginx/values.yaml
-```
-
----
-
-### 5.2 cert-manager
-
-```bash
-helm upgrade --install cert-manager jetstack/cert-manager \
-  --namespace cert-manager \
-  --create-namespace \
-  --version v1.17.2 \
-  --values helm-values/cert-manager/values.yaml
-```
-
-ClusterIssuer:
-
-```bash
-kubectl apply -f helm-values/cert-manager/clusterissuer-letsencrypt-production.yaml
-```
-
----
-
-### 5.3 NATS
-
-```bash
-helm upgrade --install nats nats/nats \
-  --namespace nats \
-  --create-namespace \
-  --version 1.3.3 \
-  --values helm-values/nats/values.yaml
-```
-
----
-
-## Namespaces
-
-```bash
-kubectl create namespace camunda8
-kubectl create namespace keycloak
-```
-
----
-
-## Keycloak Installation
-
-### 7.1 CRDs & Operator
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/26.4.5/kubernetes/keycloaks.k8s.keycloak.org-v1.yml
-kubectl apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/26.4.5/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml
-kubectl -n keycloak apply -f https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/26.4.5/kubernetes/kubernetes.yml
-```
-
----
-
-### 7.2 Keycloak DB Secret
-
-```bash
-kubectl create secret -n keycloak generic keycloak-db-secret-user \
-  --from-literal=username=keycloak
-```
-
----
-
-### 7.3 PostgreSQL für Keycloak
-
-```bash
-helm install keycloak-db bitnami/postgresql \
-  --namespace keycloak \
-  --set auth.postgresPassword=<CHANGE_ME> \
-  --set auth.username=<CHANGE_ME> \
-  --set auth.password=<CHANGE_ME> \
-  --set auth.database=keycloak
-```
-
----
-
-### 7.4 Keycloak Manifeste
-
-```bash
-kubectl apply -f helm-values/keycloak/ingress.yaml
-kubectl apply -f helm-values/keycloak/keycloak.yaml
-```
-
----
-
-### 7.5 Admin Passwort auslesen
-
-```bash
-kubectl get secret -n keycloak camunda-keycloak-initial-admin -o yaml
-```
-
-Manuell extrahieren:
-
-```text
-data.password → base64 decode
-```
-
----
-
-## Camunda Identity Secrets
-
-```bash
-kubectl create secret generic identity-secret-for-components \
-  --namespace camunda8 \
-  --from-literal=identity-admin-client-token="keycloak-admin" \
-  --from-literal=identity-first-user-password="<CHANGE_ME>" \
-  --from-literal=identity-connectors-client-token="..." \
-  --from-literal=identity-orchestration-client-token="..."
-```
-
----
-
-## Terraform Outputs → Kubernetes Secrets
-
-⚠️ Terraform Outputs enthalten sensitive Daten und dürfen nicht geloggt, committed oder geteilt werden.
-
-### 9.1 OpenSearch
-
-```bash
-terraform output -raw opensearch_password
-kubectl create -n camunda8 secret generic opensearch-credentials \
-  --from-literal=password=opensearch-password
-```
-
----
-
-### 9.2 Postgres
-
-```bash
-terraform output -raw postgres_dsn
-```
-
-Manuell:
-
-* Passwort extrahieren (`camunda_user:<PASSWORD>@`)
-
-```bash
-kubectl create -n camunda8 secret generic identity-db-secret \
-  --from-literal=database-password=postgres-password
-```
-
----
-
-## OpenSearch ACL manuell setzen
-
-Im STACKIT Portal:
-
-* OpenSearch → ACL
-* IP des Kubernetes Clusters hinzufügen
-
-IP ermitteln:
-
-```bash
-kubectl run -it --rm debug --image=alpine -- sh -c \
-  "apk add curl; curl ifconfig.me"
-```
-
----
-
-## Camunda Deployment
-
-```bash
-helm install camunda camunda/camunda-platform \
-  --namespace camunda8 \
-  -f helm-values/camunda/values.yaml
-```
-
-`values.yaml` enthält:
-
-* OpenSearch Endpoint
-* Credentials
-* Object Storage Keys
-* Postgres DSN
 
 ---
 

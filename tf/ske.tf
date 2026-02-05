@@ -1,29 +1,28 @@
-resource "stackit_ske_cluster" "camunda8" {
+resource "stackit_ske_cluster" "camunda" {
   project_id             = var.project_id
-  name                   = "camunda8"
-  kubernetes_version_min = "1.34.2"
+  name                   = "camunda"
+  kubernetes_version_min = "1.34.3"
   node_pools = [
     {
       name               = "pool1"
-      machine_type       = "g2i.16"
+      machine_type       = var.ske_machine_type
       os_name            = "flatcar"
       minimum            = "1"
       maximum            = "1"
-      availability_zones = ["eu01-1"]
-      volume_type        = "storage_premium_perf2"
+      availability_zones = var.ske_availability_zones
+      volume_type        = var.ske_volume_type
     }
   ]
   maintenance = {
     enable_kubernetes_version_updates    = true
     enable_machine_image_version_updates = true
-    start                                = "01:00:00Z"
-    end                                  = "02:00:00Z"
+    start                                = var.ske_maintenance_window.start
+    end                                  = var.ske_maintenance_window.end
   }
   extensions = {
     dns = {
       enabled = true
-      zones   = [stackit_dns_zone.camunda8.dns_name]
+      zones   = [stackit_dns_zone.camunda.dns_name]
     }
   }
 }
-
