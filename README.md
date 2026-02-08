@@ -3,71 +3,76 @@
 [![Camunda](https://img.shields.io/badge/Camunda-FC5D0D)](https://www.camunda.com/)
 [![Terraform](https://img.shields.io/badge/Terraform-5835CC)](https://developer.hashicorp.com/terraform/tutorials?product_intent=terraform)
 
-Bereitstellung von Referenzkonfigurationen und Beispielen für das Deployment von Camunda 8 auf STACKIT. Dieses
-Repository erweitert die offiziellen Camunda Deployment References um spezifische Anleitungen, Infrastruktur-Templates
-und Best Practices für STACKIT.
+Provision of reference configurations and examples for deploying Camunda 8 on [STACKIT](https://stackit.com/en). This repository builds up on the official [Camunda Deployment References](https://github.com/camunda/camunda-deployment-references/tree/stable/8.8?tab=readme-ov-file) with specific instructions, infrastructure templates, and best practices for STACKIT.
+
+# Table of Contents
+
+* [Local requirements](#local-requirements)
+  * [`Terraform` Installation](#terraform-installation-)
+  * [`STACKIT CLI` Installation](#stackit-cli-installation-)
+* [STACKIT Access & Project Configuration](#stackit-access--project-configuration)
+  * [Create a service account for Terraform](#create-a-service-account-for-terraform)
+* [Terraform Backend (STACKIT Object Storage / S3)](#terraform-backend-stackit-object-storage--s3)
+  * [Credentials Group for Terraform State](#credentials-group-for-terraform-state)
+  * [Create S3 Credentials](#create-s3-credentials)
+  * [Configure Terraform Backend](#configure-terraform-backend)
+* [Terraform Infrastruktur Deployment](#terraform-infrastruktur-deployment)
+  * [Terraform apply](#terraform-apply)
+  * [Destroy / Ressourcen cleanup:](#destroy--ressourcen-cleanup)
+* [Kubernetes Access](#kubernetes-access)
+
+## Local requirements
+
+### `Terraform` Installation 
+
+Documentation: [Install Terraform](https://developer.hashicorp.com/terraform/install)
+
+### `STACKIT CLI` Installation 
+
+Documentation: [STACKIT CLI](https://github.com/stackitcloud/stackit-cli/blob/main/INSTALLATION.md)
 
 ---
 
-## Lokale Voraussetzungen
-
-### 0.1 Terraform installieren
-
-Dokumentation:
-[Install Terraform](https://developer.hashicorp.com/terraform/install)
-
-### 0.2 STACKIT CLI installieren
-
-Dokumentation:
-[STACKIT CLI](https://github.com/stackitcloud/stackit-cli/blob/main/INSTALLATION.md)
-
----
-
-## STACKIT Zugriff & Projektkonfiguration
-
-### 1.1 Login in STACKIT
+## STACKIT Access & Project Configuration
 
 ```bash
+# Login in to STACKIT
 stackit auth login
-```
 
-### 1.2 Projekt auswählen
-
-```bash
+# Select project
 stackit project list
-stackit config set --project-id PROJECTx-IDyy-zzzz-aaaa-DUMMYbbbbbbb
+stackit config set --project-id <PROJECT-ID>
 ```
 
 ---
 
-### 1.3 Service Account für Terraform erstellen
+### Create a service account for Terraform
 
-Dokumentation:
-[Create a Service Account](https://docs.stackit.cloud/stackit/en/create-a-service-account-134415839.html)
+Documentation: [Create a Service Account](https://docs.stackit.cloud/stackit/en/create-a-service-account-134415839.html)
 
 > [!WARNING]
-> Falls im Team bereits ein Service Account existiert, **muss kein neuer Service Account erstellt werden**.  
-> In diesem Fall wird das **bereits vorhandene `sa_key.json`** verwendet.
+> If a service account already exists in the team, **no new service account needs to be created**.  
+> In this case, the **existing `sa_key.json`** is used.
 >
-> Voraussetzungen:
-> - Zugriff auf das bestehende `sa_key.json`
-> - Datei liegt lokal vor
-> - Datei ist in `.gitignore` eingetragen
+> Requirements:
+> - Access to the existing `sa_key.json`
+> - File is available locally
+> - File is entered in `.gitignore`
 
-#### Neuen Service Account erstellen
+Create a new Service Account:
 
 ```bash
-stackit service-account create --name terraform
+stackit service-account create --name <SERVICE_ACCOUNT_NAME>
 ```
 
-* erzeugt `sa_key.json`
-* Datei wird **lokal abgelegt**
-* muss in `.gitignore` stehen
+* Creates `sa_key.json`
+* File is **stored locally**
+* Must be included in `.gitignore` if you place it inside the projekt
 
-Service Account dem Projekt hinzufügen:
+Add service account to the project:
 
 ```bash
-stackit project member add terraform-<SERVICE_ACCOUNT_ID>@sa.stackit.cloud --role editor
+stackit project member add <SERVICE_ACCOUNT_NAME>@sa.stackit.cloud --role editor
 ```
 
 ---
@@ -75,85 +80,97 @@ stackit project member add terraform-<SERVICE_ACCOUNT_ID>@sa.stackit.cloud --rol
 ## Terraform Backend (STACKIT Object Storage / S3)
 
 > [!WARNING]
-> Falls der Object Storage, der Bucket und die Credentials Group bereits für dieses Projekt existieren, **müssen diese Schritte nicht erneut durchgeführt werden**.  
-> In diesem Fall kann direkt die bestehende Konfiguration für das Terraform Backend verwendet werden.
+> If the object storage, bucket, and credentials group already exist for this project, **these steps do not need to be performed again**.  
+> In this case, the existing configuration can be used directly for the Terraform backend.
 >
-> Voraussetzungen:
-> - Zugriff auf bestehende Bucket- und Credential-Daten
-> - Lokale Datei `config.s3.tfbackend` ist vorhanden oder kann anhand bestehender Keys erstellt werden
-> - Alle sensiblen Daten sind in `.gitignore` eingetragen
-
-### 2.1 Object Storage aktivieren
+> Prerequisites:
+> - Access to existing bucket and credential data
+> - Local file `config.s3.tfbackend` exists or can be created using existing keys
+> - All sensitive data is entered in `.gitignore`
 
 ```bash
+# Enable object storage
 stackit object-storage enable
-```
 
-### 2.2 Bucket für Terraform State anlegen
-
-```bash
+# Create Bucket for Terraform State
 stackit object-storage bucket create tfstate-bucket-camunda-ske-deployment
 ```
 
 ---
 
-### 2.3 Credentials Group für Terraform State
+### Credentials Group for Terraform State
 
 ```bash
 stackit object-storage credentials-group create --name terraform-state
 ```
 
-Ergebnis:
+Result:
 
 * Credentials Group ID
 * URN
 
 ---
 
-### 2.4 S3 Credentials erzeugen
+### Create S3 Credentials
+
+Use `CREADENTIAL_GROUP_ID` generated in  previous step. 
 
 ```bash
-stackit object-storage credentials create --credentials-group-id myCredGroup
+stackit object-storage credentials create --credentials-group-id <CREADENTIAL_GROUP_ID>
 ```
 
-Erzeugt:
+Generates:
 
 * Access Key
 * Secret Access Key
-* **Expire Date: Never**
+* **Expiration Date: Never**
 
 ---
 
-### 2.5 Terraform Backend konfigurieren
+### Configure Terraform Backend
+
+Configure S3 Bucket
 
 ```bash
-cp config.s3.example.tfbackend config.s3.tfbackend
+cp tf/config.s3.example.tfbackend tf/config.s3.tfbackend
 ```
 
-Manuell anpassen:
+Adjust `secret_key` and `access_key`:
 
 ```hcl
-secret_key = "<S3_SECRET_KEY>"
 access_key = "<S3_ACCESS_KEY>"
+secret_key = "<S3_SECRET_KEY>"
 bucket     = "tfstate-bucket-camunda-ske-deployment"
 key        = "camunda_ske_deployment.tfstate"
 ```
+
+Configure remaining terraform variables by copying `terraform.example.tfvars` to `terraform.tfvars` (`cp terraform.example.tfvars terraform.tfvars`) and replacing the placeholders.
+
+Create Service Account Key or reference:
+
+```bash
+cd tf/
+stackit service-account key create --email <SERVICE_ACCOUNT_NAME>@sa.stackit.cloud > sa_key.json
+```
+
+If you already have one, you could copy it and adopt the name if necessary in [`variables.tf`](./tf/variables.tf) (`sa_key_file_name`).
 
 ---
 
 ## Terraform Infrastruktur Deployment
 
-### 3.1 Terraform ausführen
+### Terraform apply
 
 ```bash
+cd tf/
 terraform init --backend-config=./config.s3.tfbackend
 terraform plan
 terraform apply
 ```
 
-Ergebnis:
+Result:
 
-Laufende Instanzen von:
+Running instances of:
 * SKE Cluster
 * Postgres
 * OpenSearch
@@ -161,34 +178,34 @@ Laufende Instanzen von:
 * Keycloak
 * Camunda 8
 
-### 3.2 Aufräumen / Ressourcen löschen:
+### Destroy / Ressourcen cleanup:
 
 ```bash
 terraform destroy
 ```
 
 > [!IMPORTANT]
-> terraform destroy löscht alle oben aufgeführten Instanzen und kann nicht rückgängig gemacht werden.
+> terraform destroy deletes all instances listed above and cannot be undone.
 
 ---
 
-## Kubernetes Zugriff
-
-### 4.1 Cluster anzeigen
+## Kubernetes Access
 
 ```bash
+# View Cluster
 stackit ske cluster list
-```
 
-### 4.2 kubeconfig erzeugen
-
-```bash
+# Create kubeconfig
 stackit ske kubeconfig create camunda --login
 ```
 
 ---
 
-## Referenzen für spätere Erweiterungen
+## Limitation
+
+Currently only the Orchestration Cluster is supported. The Web Modeler and Console will follow. For the distinction, see [Camunda docs](https://docs.camunda.io/docs/self-managed/reference-architecture/#orchestration-cluster-vs-web-modeler-and-console).
+
+## References for later extensions
 
 * Identity Secret:
   [https://github.com/camunda/camunda-deployment-references/blob/stable/8.8/generic/openshift/single-region/procedure/create-identity-secret.sh](https://github.com/camunda/camunda-deployment-references/blob/stable/8.8/generic/openshift/single-region/procedure/create-identity-secret.sh)
