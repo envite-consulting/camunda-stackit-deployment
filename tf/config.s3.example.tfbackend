@@ -1,0 +1,7 @@
+# Replace keys and bucket name here and rename this file to config.s3.tfbackend
+secret_key = "change-me"
+access_key = "change-me"
+bucket = "my-bucket-name"
+
+# The key can be left as it is, but can also be customized as desired (before the terraform init)
+key = "camunda_ske_deployment.tfstate"

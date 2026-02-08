@@ -127,7 +127,7 @@ Erzeugt:
 ### 2.5 Terraform Backend konfigurieren
 
 ```bash
-cp config.s3.tfbackend.example config.s3.tfbackend
+cp config.s3.example.tfbackend config.s3.tfbackend
 ```
 
 Manuell anpassen:
