@@ -23,7 +23,7 @@ variable "dns_name" {
 
 # Postgres
 variable "postgres_user_camunda" {
-  description = "Postgre username for Camunda database"
+  description = "Postgres username for Camunda database"
   type        = string
   default     = "camunda_user"
 }
@@ -34,12 +34,12 @@ variable "postgres_user_keycloak" {
   default     = "keycloak_user"
 }
 variable "postgres_database_camunda" {
-  description = "Postgre database name for Camunda"
+  description = "Postgres database name for Camunda"
   type        = string
   default     = "camunda"
 }
 variable "postgres_database_keycloak" {
-  description = "Postgre database name for Keycloak"
+  description = "Postgres database name for Keycloak"
   type        = string
   default     = "keycloak"
 }
@@ -60,6 +60,7 @@ variable "opensearch_plan" {
 # Camunda / Keycloak User & Secrets
 variable "camunda_initial_user" {
   description = "Initial Camunda platform user"
+  sensitive = true
   type = object({
     username  = string
     email     = string
@@ -70,6 +71,7 @@ variable "camunda_initial_user" {
 
 variable "keycloak_initial_admin" {
   description = "Initial Keycloak admin user"
+  sensitive = true
   type = object({
     username = string
     password = string
@@ -78,6 +80,7 @@ variable "keycloak_initial_admin" {
 
 variable "camunda_passwords" {
   description = "Passwords used by Camunda components"
+  sensitive = true
   type = object({
     firstUser             = string
     identityConnectors    = string
@@ -164,61 +167,61 @@ variable "namespace_nats" {
 
 # Secrets & Secret Stores
 variable "secret_name_camunda_tls" {
-  description = "TLS secret for Camunda ingress"
+  description = "Name of TLS secret for Camunda ingress"
   type        = string
   default     = "camunda-tls"
 }
 
 variable "secret_name_keycloak_tls" {
-  description = "TLS secret for Keycloak ingress"
+  description = "Name of TLS secret for Keycloak ingress"
   type        = string
   default     = "keycloak-tls"
 }
 
 variable "secret_name_zeebe_tls" {
-  description = "TLS secret for Zeebe gRPC"
+  description = "Name of TLS secret for Zeebe gRPC"
   type        = string
   default     = "camunda-zeebe-grpc-tls"
 }
 
 variable "secret_name_camunda_passwords" {
-  description = "Secret containing Camunda component passwords"
+  description = "Name of secret containing Camunda component passwords"
   type        = string
   default     = "camunda-passwords"
 }
 
 variable "secret_name_keycloak_initial_admin_password" {
-  description = "Secret containing Keycloak initial admin"
+  description = "Name of secret containing Keycloak initial admin"
   type        = string
   default     = "keycloak-initial-admin-password"
 }
 
 variable "secret_name_postgres_camunda" {
-  description = "Postgres credentials secret for Camunda"
+  description = "Name of Postgres credentials secret for Camunda"
   type        = string
   default     = "postgres-camunda"
 }
 
 variable "secret_name_postgres_keycloak" {
-  description = "Postgres credentials secret for Keycloak"
+  description = "Name of Postgres credentials secret for Keycloak"
   type        = string
   default     = "postgres-keycloak"
 }
 
 variable "secret_name_opensearch" {
-  description = "OpenSearch credentials secret"
+  description = "Name of OpenSearch credentials secret"
   type        = string
   default     = "opensearch-camunda"
 }
 
 variable "secret_name_lets_encrypt_production" {
-  description = "Secret name for Let's Encrypt production certificates"
+  description = "Name of secret for Let's Encrypt production certificates"
   type        = string
   default     = "letsencrypt-production"
 }
 
 variable "secret_name_vault_token" {
-  description = "Secret name vault"
+  description = "Name of secret for vault token"
   type        = string
   default     = "stackit-vault-token"
 }

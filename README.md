@@ -16,7 +16,7 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
   * [Credentials Group for Terraform State](#credentials-group-for-terraform-state)
   * [Create S3 Credentials](#create-s3-credentials)
   * [Configure Terraform Backend](#configure-terraform-backend)
-* [Terraform Infrastruktur Deployment](#terraform-infrastruktur-deployment)
+* [Terraform Infrastructure Deployment](#terraform-infrastructure-deployment)
   * [Terraform apply](#terraform-apply)
   * [Destroy / Ressourcen cleanup:](#destroy--ressourcen-cleanup)
 * [Kubernetes Access](#kubernetes-access)
@@ -64,10 +64,6 @@ Create a new Service Account:
 ```bash
 stackit service-account create --name <SERVICE_ACCOUNT_NAME>
 ```
-
-* Creates `sa_key.json`
-* File is **stored locally**
-* Must be included in `.gitignore` if you place it inside the projekt
 
 Add service account to the project:
 
@@ -157,7 +153,7 @@ If you already have one, you could copy it and adopt the name if necessary in [`
 
 ---
 
-## Terraform Infrastruktur Deployment
+## Terraform Infrastructure Deployment
 
 ### Terraform apply
 

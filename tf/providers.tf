@@ -29,7 +29,6 @@ provider "helm" {
 
 provider "vault" {
   address               = var.vault_address
-  skip_child_token      = true
   max_lease_ttl_seconds = 3600
 
   auth_login_userpass {
