@@ -36,7 +36,7 @@ Documentation: [STACKIT CLI](https://github.com/stackitcloud/stackit-cli/blob/ma
 ## STACKIT Access & Project Configuration
 
 ```bash
-# Login in to STACKIT
+# Login to STACKIT
 stackit auth login
 
 # Select project
@@ -109,10 +109,10 @@ Result:
 
 ### Create S3 Credentials
 
-Use `CREADENTIAL_GROUP_ID` generated in  previous step. 
+Use `CREDENTIAL_GROUP_ID` generated in  previous step. 
 
 ```bash
-stackit object-storage credentials create --credentials-group-id <CREADENTIAL_GROUP_ID>
+stackit object-storage credentials create --credentials-group-id <CREDENTIAL_GROUP_ID>
 ```
 
 Generates:
