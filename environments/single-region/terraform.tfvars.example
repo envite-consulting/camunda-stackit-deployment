@@ -1,0 +1,13 @@
+project_id = "xxxxxxxx-xxxx-vxxx-wxxx-xxxxxxxxxxxx"
+dns_name   = "my-camunda-example.stackit.gg"
+
+environment = "single-region"
+
+camunda_initial_user = {
+  username  = "demo"
+  email     = "demo@example.com"
+  firstName = "Demo"
+  lastName  = "User"
+}
+
+keycloak_initial_admin_username = "admin"

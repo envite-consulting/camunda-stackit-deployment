@@ -27,6 +27,8 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
 
 Documentation: [Install Terraform](https://developer.hashicorp.com/terraform/install)
 
+Required version: "1.14.7"
+
 ### `STACKIT CLI` Installation 
 
 Documentation: [STACKIT CLI](https://github.com/stackitcloud/stackit-cli/blob/main/INSTALLATION.md)
@@ -125,10 +127,13 @@ Generates:
 
 ### Configure Terraform Backend
 
+> [!NOTE]
+> Replace `<environment>` with the target environment directory (e.g. `single-region`).
+
 Configure S3 Bucket
 
 ```bash
-cp tf/config.s3.example.tfbackend tf/config.s3.tfbackend
+cp environments/<environment>/config.s3.example.tfbackend environments/<environment>/config.s3.tfbackend
 ```
 
 Adjust `secret_key` and `access_key`:
@@ -140,16 +145,16 @@ bucket     = "tfstate-bucket-camunda-ske-deployment"
 key        = "camunda_ske_deployment.tfstate"
 ```
 
-Configure remaining terraform variables by copying `terraform.example.tfvars` to `terraform.tfvars` (`cp terraform.example.tfvars terraform.tfvars`) and replacing the placeholders.
+Configure remaining terraform variables by copying `terraform.example.tfvars` to `terraform.tfvars` (`cp environments/<environment>/terraform.example.tfvars environments/<environment>/terraform.tfvars`) and replacing the placeholders.
 
 Create Service Account Key or reference:
 
 ```bash
-cd tf/
+cd environments/<environment>/
 stackit service-account key create --email <SERVICE_ACCOUNT_NAME>@sa.stackit.cloud > sa_key.json
 ```
 
-If you already have one, you could copy it and adopt the name if necessary in [`variables.tf`](./tf/variables.tf) (`sa_key_file_name`).
+If you already have one, you could copy it and adopt the name if necessary in [`variables.tf`](./environments/<environment>/variables.tf) (`sa_key_file_name`).
 
 ---
 
@@ -158,7 +163,7 @@ If you already have one, you could copy it and adopt the name if necessary in [`
 ### Terraform apply
 
 ```bash
-cd tf/
+cd environments/<environment>/
 terraform init --backend-config=./config.s3.tfbackend
 terraform plan
 terraform apply
@@ -192,7 +197,7 @@ terraform destroy
 stackit ske cluster list
 
 # Create kubeconfig
-stackit ske kubeconfig create camunda --login
+stackit ske kubeconfig create <environment> --login
 ```
 
 ---
