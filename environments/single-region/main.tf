@@ -1,6 +1,7 @@
 locals {
-  cert_manager_cluster_issuer = "letsencrypt-production"
-  keycloak_namespace          = "keycloak"
+  cert_manager_cluster_issuer       = "letsencrypt-production"
+  keycloak_namespace                = "keycloak"
+  postgres_database_name_webmodeler = "webmodeler"
 }
 
 module "stackit_dns" {
@@ -24,7 +25,7 @@ module "stackit_ske" {
   kubernetes_version_min = var.kubernetes_version_min
 }
 
-module "stackit_postgres" {
+module "stackit_postgres_keycloak" {
   source                 = "../../modules/stackit-postgres"
   project_id             = var.project_id
   acl                    = module.stackit_ske.egress_address_ranges
@@ -33,11 +34,27 @@ module "stackit_postgres" {
   postgres_storage_size  = var.postgres_storage_size
   replicas               = var.replicas
   secret_store_path      = module.stackit_secrets_manager.instance_id
-  depends_on             = [module.stackit_secrets_manager]
   backup_schedule        = var.backup_schedule
   database_names         = ["keycloak"]
   instance_name          = "keycloak-postgres-${var.environment}"
   postgres_username      = "postgres-user"
+  depends_on             = [module.stackit_secrets_manager]
+}
+
+module "stackit_postgres_webmodeler" {
+  source                 = "../../modules/stackit-postgres"
+  project_id             = var.project_id
+  acl                    = module.stackit_ske.egress_address_ranges
+  postgres_flavor        = var.postgres_flavor
+  postgres_storage_class = var.postgres_storage_class
+  postgres_storage_size  = var.postgres_storage_size
+  replicas               = var.replicas
+  secret_store_path      = module.stackit_secrets_manager.instance_id
+  backup_schedule        = var.backup_schedule
+  database_names         = [local.postgres_database_name_webmodeler]
+  instance_name          = "webmodeler-postgres-${var.environment}"
+  postgres_username      = "postgres-user"
+  depends_on             = [module.stackit_secrets_manager]
 }
 
 module "stackit_object_storage" {
@@ -101,15 +118,15 @@ module "kubernetes_identity_management" {
   hostname_prefix                = "keycloak"
   service_name                   = "camunda-keycloak-service"
   cert_manager_cluster_issuer    = local.cert_manager_cluster_issuer
-  postgres_host                  = module.stackit_postgres.db_host
-  postgres_credentials_kv_secret = module.stackit_postgres.postgres_credentials_kv_secret
+  postgres_host                  = module.stackit_postgres_keycloak.db_host
+  postgres_credentials_kv_secret = module.stackit_postgres_keycloak.postgres_credentials_kv_secret
   secret_store_path              = module.stackit_secrets_manager.instance_id
   initial_admin_name             = var.keycloak_initial_admin_username
   depends_on = [
     module.kubernetes_ingress,
     module.kubernetes_secret_management,
     module.keycloak_operator_bootstrap,
-    module.stackit_postgres
+    module.stackit_postgres_keycloak
   ]
 }
 
@@ -130,9 +147,18 @@ module "camunda_workflow_engine" {
   opensearch_credentials_kv_secret          = module.stackit_opensearch.credentials_kv_secret
   zeebe_config                              = var.zeebe_config
   keycloak_realm                            = var.keycloak_realm
+  webmodeler_postgres_credentials_kv_secret = module.stackit_postgres_webmodeler.postgres_credentials_kv_secret
+  webmodeler_mail_from_address              = var.webmodeler_mail_from_address
+  webmodeler_postgres_config = {
+    host     = module.stackit_postgres_webmodeler.db_host
+    port     = module.stackit_postgres_webmodeler.db_port
+    name     = local.postgres_database_name_webmodeler
+    username = module.stackit_postgres_webmodeler.db_username
+  }
   depends_on = [
     module.kubernetes_identity_management,
-    module.kubernetes_messaging
+    module.kubernetes_messaging,
+    module.stackit_postgres_webmodeler
   ]
 }
 

@@ -108,3 +108,23 @@ variable "zeebe_config" {
     error_message = "pvc_size_gb must be a valid Kubernetes quantity, e.g. '10Gi' or '512Mi'."
   }
 }
+
+variable "webmodeler_postgres_config" {
+  description = "PostgreSQL config for Web Modeler."
+  type = object({
+    host     = string
+    port     = number
+    name     = string
+    username = string
+  })
+}
+
+variable "webmodeler_postgres_credentials_kv_secret" {
+  description = "Key in the ESO ClusterSecretStore that holds the OpenSearch credentials (username + password)."
+  type        = string
+}
+
+variable "webmodeler_mail_from_address" {
+  description = "Email address used as the sender of emails sent by Web Modeler."
+  type        = string
+}
