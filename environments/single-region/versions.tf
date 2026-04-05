@@ -49,7 +49,7 @@ variable "keycloak_operator_version" {
 variable "camunda_helm_version" {
   description = "Camunda Helm version to deploy"
   type        = string
-  default     = "13.5.3"
+  default     = "13.7.0"
 }
 
 locals {

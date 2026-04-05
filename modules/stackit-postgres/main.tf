@@ -1,5 +1,5 @@
 locals {
-  credentials_kv_secret = "postgres-credentials"
+  credentials_kv_secret = "${var.instance_name}-credentials"
 }
 
 resource "stackit_postgresflex_instance" "main" {

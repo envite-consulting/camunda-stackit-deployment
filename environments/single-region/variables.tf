@@ -151,3 +151,9 @@ variable "sa_key_file_name" {
   type        = string
   default     = "sa_key.json"
 }
+
+variable "webmodeler_mail_from_address" {
+  description = "Email address used as the sender of emails sent by Web Modeler."
+  type        = string
+  default     = "noreply@example.com"
+}
