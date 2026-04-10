@@ -8,8 +8,8 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
 # Table of Contents
 
 * [Local requirements](#local-requirements)
-  * [`Terraform` Installation](#terraform-installation-)
-  * [`STACKIT CLI` Installation](#stackit-cli-installation-)
+  * [`Terraform` Installation](#terraform-installation)
+  * [`STACKIT CLI` Installation](#stackit-cli-installation)
 * [STACKIT Access & Project Configuration](#stackit-access--project-configuration)
   * [Create a service account for Terraform](#create-a-service-account-for-terraform)
 * [Terraform Backend (STACKIT Object Storage / S3)](#terraform-backend-stackit-object-storage--s3)
@@ -20,16 +20,17 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
   * [Terraform apply](#terraform-apply)
   * [Destroy / Ressourcen cleanup:](#destroy--ressourcen-cleanup)
 * [Kubernetes Access](#kubernetes-access)
+* [Accessing Camunda Console](#accessing-camunda-console)
 
 ## Local requirements
 
-### `Terraform` Installation 
+### `Terraform` Installation
 
 Documentation: [Install Terraform](https://developer.hashicorp.com/terraform/install)
 
 Required version: "1.14.7"
 
-### `STACKIT CLI` Installation 
+### `STACKIT CLI` Installation
 
 Documentation: [STACKIT CLI](https://github.com/stackitcloud/stackit-cli/blob/main/INSTALLATION.md)
 
@@ -111,7 +112,7 @@ Result:
 
 ### Create S3 Credentials
 
-Use `CREDENTIAL_GROUP_ID` generated in  previous step. 
+Use `CREDENTIAL_GROUP_ID` generated in previous step.
 
 ```bash
 stackit object-storage credentials create --credentials-group-id <CREDENTIAL_GROUP_ID>
@@ -172,6 +173,7 @@ terraform apply
 Result:
 
 Running instances of:
+
 * SKE Cluster
 * Postgres
 * OpenSearch
@@ -202,9 +204,24 @@ stackit ske kubeconfig create <environment> --login
 
 ---
 
-## Limitation
+## Accessing Camunda Console
 
-Currently only the Orchestration Cluster is supported. The Web Modeler and Console will follow. For the distinction, see [Camunda docs](https://docs.camunda.io/docs/self-managed/reference-architecture/#orchestration-cluster-vs-web-modeler-and-console).
+1. Access the Camunda Console via `https://<dns_name>/console`.
+
+   The `dns_name` value is provided as an input variable to the `camunda-workflow-engine` module.  
+   This value is environment-specific and is typically set through Terraform variables (for example in the target environment's `terraform.tfvars`).
+
+2. Log in with the initial Camunda user defined through the `camunda_initial_user` input variable passed to the `camunda-workflow-engine` module.  
+   The login username is taken from the `username` field of that input variable (`camunda_initial_user.username`).
+
+   The password is generated automatically and can be viewed in the STACKIT Secrets Manager portal:
+
+    - Secret: `camunda-passwords`
+    - Key: `firstUser`
+
+   How to view secrets: [STACKIT – View, create and delete secrets](https://docs.stackit.cloud/products/security/secrets-manager/getting-started/view-create-and-delete-secrets/#view-secrets)
+
+---
 
 ## References for later extensions
 
