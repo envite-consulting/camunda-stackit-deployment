@@ -1,0 +1,204 @@
+{
+  "repo_notes": [
+    {
+      "content": "The repository provides reference configurations and examples for deploying Camunda 8 on STACKIT. It expands the official Camunda Deployment References with specific instructions, infrastructure templates, and best practices for STACKIT. The main documentation can be found in the README.md"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Overview",
+      "purpose": "High-level introduction to the Camunda 8 on STACKIT deployment project: what it does, why it exists, the overall architecture, and how the repository is organized. Links to child pages for setup and architecture details.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Getting Started",
+      "purpose": "Step-by-step guide for onboarding engineers: prerequisites, STACKIT CLI authentication, service account creation, S3 backend bootstrapping, and running the first terraform init/apply cycle.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Architecture Overview",
+      "purpose": "Detailed description of the layered architecture: STACKIT cloud foundation, Terraform orchestration layer, Kubernetes (SKE) compute layer, and Camunda 8 application layer. Covers the PlantUML component diagram and how all services relate to each other.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Contributing and Issue Reporting",
+      "purpose": "Explains the GitHub contribution workflow, how to use the bug report and feature request issue templates, and the pull request process.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Environment Configuration",
+      "purpose": "Overview of how environments are structured and configured in this repository, linking to child pages covering the single-region environment layout, provider/version pinning, and example configuration files.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Single-Region Environment",
+      "purpose": "Deep dive into the single-region environment: the main.tf orchestration file, module wiring, dependency graph between infrastructure modules, and how the environment provisions the full Camunda stack end-to-end.",
+      "parent": "Environment Configuration",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Provider and Version Configuration",
+      "purpose": "Covers versions.tf: Terraform version lock (1.14.7), provider version constraints (stackit ~>0.80.0, helm, kubernetes, kubectl, vault), S3 backend configuration, and the provider dependency chain that ties SKE and Secrets Manager outputs to application-layer providers.",
+      "parent": "Environment Configuration",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Input Variables and Example Configuration",
+      "purpose": "Reference for all input variables defined in variables.tf: project_id, dns_name, environment, SKE sizing, Zeebe cluster topology, Keycloak settings, PostgreSQL flavor/storage, OpenSearch plan, and Web Modeler mail. Includes annotated terraform.tfvars.example and config.s3.example.tfbackend.",
+      "parent": "Environment Configuration",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Terraform Modules",
+      "purpose": "Overview of the reusable Terraform modules under modules/. Introduces the two categories — STACKIT infrastructure modules and Kubernetes application modules — and links to child pages for each group.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Camunda Workflow Engine Module",
+      "purpose": "Detailed documentation of the camunda-workflow-engine module: Helm chart deployment, Zeebe cluster topology configuration, OpenSearch integration (replacing Elasticsearch), OIDC authentication via Keycloak, ingress/TLS setup for web and gRPC endpoints, and secret management via ExternalSecret resources.",
+      "parent": "Terraform Modules",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Identity Management Modules",
+      "purpose": "Covers the two Keycloak-related modules: keycloak-operator-bootstrap (CRD installation, operator deployment from remote URLs, namespace setup) and kubernetes-identity-management (Keycloak CR configuration, PostgreSQL backend, ingress with TLS, bootstrapAdmin secret wiring).",
+      "parent": "Terraform Modules",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "STACKIT Infrastructure Modules",
+      "purpose": "Documents the STACKIT-specific infrastructure modules: stackit-ske (Kubernetes cluster provisioning, node pools, Flatcar OS, kubeconfig decoding), stackit-postgres (PostgreSQL Flex instance, user, database iteration, ACL), stackit-opensearch (OpenSearch instance, credentials, ACL), stackit-dns (DNS zone), and stackit-object-storage (S3 bucket, credentials group).",
+      "parent": "Terraform Modules",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Kubernetes Platform Modules",
+      "purpose": "Documents the Kubernetes-layer platform modules: kubernetes-ingress (ingress-nginx Helm chart, cert-manager, Let's Encrypt ClusterIssuer, HTTP01 solver), kubernetes-secret-management (External Secrets Operator Helm chart, namespace), kubernetes-messaging (NATS Helm chart, namespace), and stackit-secrets-manager (STACKIT Secrets Manager instance, ClusterSecretStore wiring for ESO).",
+      "parent": "Terraform Modules",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Secret Management Architecture",
+      "purpose": "Overview of the end-to-end secret management strategy used across the deployment, linking to child pages covering the Vault/STACKIT Secrets Manager integration and the External Secrets Operator pattern.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "STACKIT Secrets Manager and Vault Integration",
+      "purpose": "Explains how the STACKIT Secrets Manager (Vault-compatible) is provisioned, how a service user is created with write access, how the password is bridged into a Kubernetes Opaque secret, and how the ClusterSecretStore is configured with userpass authentication pointing to the STACKIT Vault endpoint.",
+      "parent": "Secret Management Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "External Secrets Operator and ExternalSecret Resources",
+      "purpose": "Covers the External Secrets Operator (ESO) deployment, the ClusterSecretStore resource, and how ExternalSecret manifests are used to synchronize Vault KV secrets into Kubernetes namespaces. Details the four ExternalSecret resources in the camunda-workflow-engine module: camunda-passwords, opensearch-credentials, postgres-webmodeler-credentials, and keycloak-initial-admin-credentials.",
+      "parent": "Secret Management Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Networking and TLS",
+      "purpose": "Overview of the networking architecture: how external traffic reaches the cluster, how DNS is managed, and how TLS certificates are issued. Links to child pages on ingress and DNS.",
+      "parent": "Environment Configuration",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Ingress Controller and TLS Certificate Management",
+      "purpose": "Details the kubernetes-ingress module: ingress-nginx Helm deployment, cert-manager Helm deployment with CRDs enabled, Let's Encrypt production ClusterIssuer configuration, HTTP01 ACME challenge solver, and the dependency chain ensuring correct provisioning order. Covers TLS secrets (camunda-tls, camunda-zeebe-grpc-tls, keycloak-tls).",
+      "parent": "Networking and TLS",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "DNS Zone and SKE DNS Extension",
+      "purpose": "Covers the stackit-dns module (stackit_dns_zone resource), how the DNS zone is wired to the SKE cluster's DNS extension, and how the dns_name variable drives ingress hostnames for all Camunda components and Keycloak.",
+      "parent": "Networking and TLS",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Glossary",
+      "purpose": "Definitions of all codebase-specific terms, abbreviations, STACKIT service names, Camunda component names, and Terraform/Kubernetes patterns used throughout the repository. Each entry includes file path references for engineers onboarding to the project.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}

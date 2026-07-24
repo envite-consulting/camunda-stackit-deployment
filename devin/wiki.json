@@ -1,7 +1,0 @@
-{
-  "repo_notes": [
-    {
-      "content": "The repository provides reference configurations and examples for deploying Camunda 8 on STACKIT. It expands the official Camunda Deployment References with specific instructions, infrastructure templates, and best practices for STACKIT. The main documentation can be found in the README.md"
-    }
-  ]
-}
