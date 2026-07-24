@@ -1,0 +1,22 @@
+flowchart TB
+    client([Client])
+
+    subgraph STACKIT
+        subgraph ske["Kubernetes (SKE)"]
+            ingress[/"Ingress"/]
+            camunda["Camunda Cluster<br/><i>Self Managed Helm Chart</i>"]
+            keycloak["Keycloak<br/><i>Keycloak Operator</i>"]
+        end
+
+        postgres[("Postgres<br/><i>SaaS</i>")]
+        os[("OpenSearch<br/><i>SaaS</i>")]
+        s3[("S3<br/><i>SaaS</i>")]
+    end
+
+    client --> ingress
+    ingress --> keycloak
+    ingress --> camunda
+    camunda --> keycloak
+    camunda --> postgres
+    camunda --> os
+    camunda --> s3
