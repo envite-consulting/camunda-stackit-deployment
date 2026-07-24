@@ -2,6 +2,7 @@
 
 [![Camunda](https://img.shields.io/badge/Camunda-FC5D0D)](https://www.camunda.com/)
 [![Terraform](https://img.shields.io/badge/Terraform-5835CC)](https://developer.hashicorp.com/terraform/tutorials?product_intent=terraform)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/envite-consulting/camunda-stackit-deployment)
 
 Provision of reference configurations and examples for deploying Camunda 8 on [STACKIT](https://stackit.com/en). This repository builds up on the official [Camunda Deployment References](https://github.com/camunda/camunda-deployment-references/tree/stable/8.8?tab=readme-ov-file) with specific instructions, infrastructure templates, and best practices for STACKIT.
 
