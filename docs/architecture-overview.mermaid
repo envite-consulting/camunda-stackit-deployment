@@ -3,7 +3,7 @@ flowchart TB
 
     subgraph STACKIT
         subgraph ske["Kubernetes (SKE)"]
-            ingress[/"Ingress"/]
+            gateway[/"Gateway API<br/><i>Envoy Gateway</i>"/]
             camunda["Camunda Cluster<br/><i>Self Managed Helm Chart</i>"]
             keycloak["Keycloak<br/><i>Keycloak Operator</i>"]
         end
@@ -13,9 +13,9 @@ flowchart TB
         s3[("S3<br/><i>SaaS</i>")]
     end
 
-    client --> ingress
-    ingress --> keycloak
-    ingress --> camunda
+    client --> gateway
+    gateway --> keycloak
+    gateway --> camunda
     camunda --> keycloak
     camunda --> postgres
     camunda --> os

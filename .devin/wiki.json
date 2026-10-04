@@ -94,7 +94,7 @@
     },
     {
       "title": "Camunda Workflow Engine Module",
-      "purpose": "Detailed documentation of the camunda-workflow-engine module: Helm chart deployment, Zeebe cluster topology configuration, OpenSearch integration (replacing Elasticsearch), OIDC authentication via Keycloak, ingress/TLS setup for web and gRPC endpoints, and secret management via ExternalSecret resources.",
+      "purpose": "Detailed documentation of the camunda-workflow-engine module: Helm chart deployment, Zeebe cluster topology configuration, OpenSearch integration (replacing Elasticsearch), OIDC authentication via Keycloak, Gateway API routes and Envoy policies for web and gRPC endpoints, and secret management via ExternalSecret resources.",
       "parent": "Terraform Modules",
       "page_notes": [
         {
@@ -104,7 +104,7 @@
     },
     {
       "title": "Identity Management Modules",
-      "purpose": "Covers the two Keycloak-related modules: keycloak-operator-bootstrap (CRD installation, operator deployment from remote URLs, namespace setup) and kubernetes-identity-management (Keycloak CR configuration, PostgreSQL backend, ingress with TLS, bootstrapAdmin secret wiring).",
+      "purpose": "Covers the two Keycloak-related modules: keycloak-operator-bootstrap (CRD installation, operator deployment from remote URLs, namespace setup) and kubernetes-identity-management (Keycloak CR configuration, PostgreSQL backend, HTTPRoute, bootstrapAdmin secret wiring).",
       "parent": "Terraform Modules",
       "page_notes": [
         {
@@ -124,7 +124,7 @@
     },
     {
       "title": "Kubernetes Platform Modules",
-      "purpose": "Documents the Kubernetes-layer platform modules: kubernetes-ingress (ingress-nginx Helm chart, cert-manager, Let's Encrypt ClusterIssuer, HTTP01 solver), kubernetes-secret-management (External Secrets Operator Helm chart and the ClusterSecretStore for STACKIT Secrets Manager), kubernetes-messaging (NATS Helm chart, namespace), and stackit-secrets-manager (STACKIT Secrets Manager instance and user).",
+      "purpose": "Documents the Kubernetes-layer platform modules: kubernetes-gateway (Envoy Gateway as the Gateway API implementation, cert-manager with Gateway API support, STACKIT cert-manager DNS-01 webhook, a Let's Encrypt ClusterIssuer), kubernetes-gateway-app (per-application EnvoyProxy and Gateway with HTTPS listeners, TLS via cert-manager and DNS via the ExternalDNS annotation on the Envoy Service), kubernetes-secret-management (External Secrets Operator Helm chart and the ClusterSecretStore for STACKIT Secrets Manager), kubernetes-messaging (NATS Helm chart, namespace), and stackit-secrets-manager (STACKIT Secrets Manager instance and user).",
       "parent": "Terraform Modules",
       "page_notes": [
         {
@@ -163,7 +163,7 @@
     },
     {
       "title": "Networking and TLS",
-      "purpose": "Overview of the networking architecture: how external traffic reaches the cluster, how DNS is managed, and how TLS certificates are issued. Links to child pages on ingress and DNS.",
+      "purpose": "Overview of the networking architecture: how external traffic reaches the cluster, how DNS is managed, and how TLS certificates are issued. Links to child pages on the Gateway API and DNS.",
       "parent": "Environment Configuration",
       "page_notes": [
         {
@@ -172,8 +172,8 @@
       ]
     },
     {
-      "title": "Ingress Controller and TLS Certificate Management",
-      "purpose": "Details the kubernetes-ingress module: ingress-nginx Helm deployment, cert-manager Helm deployment with CRDs enabled, Let's Encrypt production ClusterIssuer configuration, HTTP01 ACME challenge solver, and the dependency chain ensuring correct provisioning order. Covers TLS secrets (camunda-tls, camunda-zeebe-grpc-tls, keycloak-tls).",
+      "title": "Gateway API and TLS Certificate Management",
+      "purpose": "Details the kubernetes-gateway module: Envoy Gateway (Gateway API) Helm deployment with its CRDs and GatewayClass, cert-manager Helm deployment with CRDs and Gateway API support enabled, the STACKIT cert-manager DNS-01 webhook (service account key Secret, Helm release) and a Let's Encrypt ClusterIssuer using the DNS-01 webhook solver, and the dependency chain ensuring correct provisioning order. Covers the kubernetes-gateway-app module, which creates one EnvoyProxy and Gateway per application (camunda-gateway, keycloak-gateway) with TLS secrets (camunda-gateway-tls, keycloak-gateway-tls) issued by cert-manager and DNS records created from the ExternalDNS hostname annotation on the Envoy LoadBalancer Service, and the routes and Envoy policies the camunda-workflow-engine and kubernetes-identity-management modules attach to these Gateways.",
       "parent": "Networking and TLS",
       "page_notes": [
         {
@@ -183,7 +183,7 @@
     },
     {
       "title": "DNS Zone and SKE DNS Extension",
-      "purpose": "Covers the stackit-dns module (stackit_dns_zone resource), how the DNS zone is wired to the SKE cluster's DNS extension, and how the dns_name variable drives ingress hostnames for all Camunda components and Keycloak.",
+      "purpose": "Covers the stackit-dns module (stackit_dns_zone resource), how the DNS zone is wired to the SKE cluster's DNS extension, and how the dns_name variable drives the hostnames for all Camunda components and Keycloak.",
       "parent": "Networking and TLS",
       "page_notes": [
         {

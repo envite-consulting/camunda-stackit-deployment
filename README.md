@@ -4,7 +4,14 @@
 [![Terraform](https://img.shields.io/badge/Terraform-5835CC)](https://developer.hashicorp.com/terraform/tutorials?product_intent=terraform)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/envite-consulting/camunda-stackit-deployment)
 
-Provision of reference configurations and examples for deploying Camunda 8 on [STACKIT](https://stackit.com/en). This repository builds up on the official [Camunda Deployment References](https://github.com/camunda/camunda-deployment-references/tree/stable/8.8?tab=readme-ov-file) with specific instructions, infrastructure templates, and best practices for STACKIT.
+Provision of reference configurations and examples for deploying Camunda 8 on [STACKIT](https://stackit.com/en). This repository builds up on the official [Camunda Deployment References](https://github.com/camunda/camunda-deployment-references/tree/stable/8.9?tab=readme-ov-file) with specific instructions, infrastructure templates, and best practices for STACKIT.
+
+## Camunda versions
+
+| Camunda | Where |
+|---|---|
+| 8.9 | `main` (current) |
+| 8.8 | tag [`camunda-8.8`](../../tree/camunda-8.8) |
 
 # Table of Contents
 
@@ -14,6 +21,7 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
 * [STACKIT Access & Project Configuration](#stackit-access--project-configuration)
 * [Service accounts](#service-accounts)
     * [Create a service account for Terraform](#create-a-service-account-for-terraform)
+    * [Create a service account for cert-manager (DNS-01)](#create-a-service-account-for-cert-manager-dns-01)
 * [Terraform Backend (STACKIT Object Storage / S3)](#terraform-backend-stackit-object-storage--s3)
     * [Credentials Group for Terraform State](#credentials-group-for-terraform-state)
     * [Create S3 Credentials](#create-s3-credentials)
@@ -23,6 +31,7 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
     * [Destroy / Ressourcen cleanup:](#destroy--ressourcen-cleanup)
 * [Kubernetes Access](#kubernetes-access)
 * [Accessing Camunda Console](#accessing-camunda-console)
+* [Public endpoints](#public-endpoints)
 * [References for later extensions](#references-for-later-extensions)
 
 ## Local requirements
@@ -54,14 +63,17 @@ stackit config set --project-id <PROJECT-ID>
 
 ## Service accounts
 
-The deployment uses one service account:
+The deployment uses two service accounts:
 
 | Service account | Used by | Role | Key file | Variable |
 |---|---|---|---|---|
 | terraform | Terraform, to provision all resources | `editor` | `sa_key.json` | `sa_key_file_name` |
+| cert-manager | STACKIT cert-manager webhook in the cluster, for DNS-01 | `dns.admin` | `sa_key_cert_manager.json` | `cert_manager_sa_key_file_name` |
+
+The cert-manager key is stored in the cluster. A separate service account ensures that this key can only manage DNS records.
 
 > [!WARNING]
-> If this service account already exists in the team, **do not create a new one**. Copy its existing key file into `environments/<environment>/` instead; if the file name differs, set the variable from the table above.
+> If these service accounts already exist in the team, **do not create new ones**. Copy their existing key files into `environments/<environment>/` instead; if a file name differs, set the corresponding variable from the table above.
 >
 > Key files are matched by `.gitignore` (`sa_key*.json`). **Never commit them.**
 
@@ -89,6 +101,29 @@ Create a key for the service account:
 ```bash
 cd environments/<environment>/
 stackit service-account key create --email <SERVICE_ACCOUNT_NAME>@sa.stackit.cloud > sa_key.json
+```
+
+### Create a service account for cert-manager (DNS-01)
+
+TLS certificates are issued through the [STACKIT cert-manager webhook](https://github.com/stackitcloud/stackit-cert-manager-webhook) using ACME **DNS-01**, which only needs the STACKIT DNS API.
+
+Create a new service account:
+
+```bash
+stackit service-account create --name <CERT_MANAGER_SA_NAME>
+```
+
+Add the service account to the project with DNS permissions only:
+
+```bash
+stackit project member add <CERT_MANAGER_SA_NAME>@sa.stackit.cloud --role dns.admin
+```
+
+Create a key for the service account:
+
+```bash
+cd environments/<environment>/
+stackit service-account key create --email <CERT_MANAGER_SA_NAME>@sa.stackit.cloud > sa_key_cert_manager.json
 ```
 
 ---
@@ -230,10 +265,22 @@ stackit ske kubeconfig create <environment> --login
 
 ---
 
+## Public endpoints
+
+| Hostname | Served by | Gateway / listener |
+|---|---|---|
+| `<dns_name>` | Camunda web applications and REST API (`/operate`, `/tasklist`, `/optimize`, `/modeler`, `/console`, `/managementidentity`, ...) | `camunda-gateway` / `https` |
+| `zeebe.<dns_name>` | Zeebe gRPC API | `camunda-gateway` / `grpcs` |
+| `keycloak.<dns_name>` | Keycloak | `keycloak-gateway` / `https` |
+
+The hostnames are built once, in the `locals` of `environments/single-region/main.tf`.
+
+---
+
 ## References for later extensions
 
 * Identity Secret:
-  [https://github.com/camunda/camunda-deployment-references/blob/stable/8.8/generic/openshift/single-region/procedure/create-identity-secret.sh](https://github.com/camunda/camunda-deployment-references/blob/stable/8.8/generic/openshift/single-region/procedure/create-identity-secret.sh)
+  [https://github.com/camunda/camunda-deployment-references/blob/stable/8.9/generic/openshift/single-region/procedure/create-identity-secret.sh](https://github.com/camunda/camunda-deployment-references/blob/stable/8.9/generic/openshift/single-region/procedure/create-identity-secret.sh)
 * Docs:
   [https://docs.camunda.io/docs/self-managed/deployment/helm/configure/authentication-and-authorization/internal-keycloak/](https://docs.camunda.io/docs/self-managed/deployment/helm/configure/authentication-and-authorization/internal-keycloak/)
 

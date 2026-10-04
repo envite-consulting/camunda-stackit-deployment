@@ -152,6 +152,12 @@ variable "sa_key_file_name" {
   default     = "sa_key.json"
 }
 
+variable "cert_manager_sa_key_file_name" {
+  description = "Path to the STACKIT service account key file (JSON) of a dedicated service account with DNS permissions on the project. Used by the cert-manager DNS-01 webhook; must not be the Terraform provider key. Never commit this file."
+  type        = string
+  default     = "sa_key_cert_manager.json"
+}
+
 variable "webmodeler_mail_from_address" {
   description = "Sender address of emails sent by Web Modeler. Required by the Camunda chart even without a mail server."
   type        = string

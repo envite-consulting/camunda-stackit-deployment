@@ -21,6 +21,8 @@ resource "stackit_ske_cluster" "main" {
     end                                  = var.ske_maintenance_window.end
   }
   extensions = {
+    # Managed ExternalDNS. It creates the A records from the external-dns.alpha.kubernetes.io/hostname annotation on
+    # LoadBalancer Services (see the kubernetes-gateway-app module), so its Gateway API support is not needed.
     dns = {
       enabled = true
       zones   = var.dns_zones

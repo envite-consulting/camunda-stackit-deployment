@@ -1,9 +1,13 @@
 locals {
-  cert_manager_cluster_issuer = "letsencrypt-production"
-
   camunda_hostname  = var.dns_name
   zeebe_hostname    = "zeebe.${var.dns_name}"
   keycloak_hostname = "keycloak.${var.dns_name}"
+
+  camunda_listeners = {
+    web  = "https"
+    grpc = "grpcs"
+  }
+  keycloak_listener = "https"
 }
 
 module "stackit_dns" {
@@ -85,11 +89,10 @@ module "stackit_object_storage" {
   credentials_name = "camunda-group-${var.environment}"
 }
 
-module "kubernetes_ingress" {
-  source                      = "../../modules/kubernetes-ingress"
-  cert_manager_cluster_issuer = local.cert_manager_cluster_issuer
-  ingress_namespace           = "ingress-nginx"
-  cert_manager_namespace      = "cert-manager"
+module "kubernetes_gateway" {
+  source             = "../../modules/kubernetes-gateway"
+  project_id         = var.project_id
+  stackit_dns_sa_key = file(var.cert_manager_sa_key_file_name)
 }
 
 module "kubernetes_secret_management" {
@@ -113,26 +116,60 @@ module "keycloak_operator_bootstrap" {
   namespace = "keycloak"
 }
 
+module "keycloak_gateway" {
+  source             = "../../modules/kubernetes-gateway-app"
+  name               = "keycloak-gateway"
+  namespace          = module.keycloak_operator_bootstrap.namespace
+  gateway_class_name = module.kubernetes_gateway.gateway_class_name
+  cluster_issuer     = module.kubernetes_gateway.cluster_issuer
+  listeners = {
+    (local.keycloak_listener) = local.keycloak_hostname
+  }
+
+  depends_on = [module.kubernetes_gateway]
+}
+
 module "kubernetes_identity_management" {
   source                         = "../../modules/kubernetes-identity-management"
   namespace                      = module.keycloak_operator_bootstrap.namespace
   hostname                       = local.keycloak_hostname
-  cert_manager_cluster_issuer    = local.cert_manager_cluster_issuer
+  gateway_name                   = module.keycloak_gateway.gateway_name
+  gateway_listener_name          = local.keycloak_listener
   postgres_host                  = module.stackit_postgres_keycloak.db_host
+  postgres_database              = one(module.stackit_postgres_keycloak.database_names)
   postgres_credentials_kv_secret = module.stackit_postgres_keycloak.postgres_credentials_kv_secret
   secret_store_path              = module.stackit_secrets_manager.instance_id
   cluster_secret_store_name      = module.kubernetes_secret_management.cluster_secret_store_name
   initial_admin_name             = var.keycloak_initial_admin_username
 
-  depends_on = [module.kubernetes_ingress]
+  depends_on = [
+    module.keycloak_operator_bootstrap,
+    module.stackit_postgres_keycloak,
+    module.kubernetes_secret_management
+  ]
+}
+
+module "camunda_gateway" {
+  source             = "../../modules/kubernetes-gateway-app"
+  name               = "camunda-gateway"
+  namespace          = module.camunda_workflow_engine.namespace
+  gateway_class_name = module.kubernetes_gateway.gateway_class_name
+  cluster_issuer     = module.kubernetes_gateway.cluster_issuer
+  listeners = {
+    (local.camunda_listeners.web)  = local.camunda_hostname
+    (local.camunda_listeners.grpc) = local.zeebe_hostname
+  }
+
+  depends_on = [module.kubernetes_gateway]
 }
 
 module "camunda_workflow_engine" {
-  source                      = "../../modules/camunda-workflow-engine"
-  namespace                   = "camunda"
-  hostname                    = local.camunda_hostname
-  zeebe_hostname              = local.zeebe_hostname
-  cert_manager_cluster_issuer = local.cert_manager_cluster_issuer
+  source                 = "../../modules/camunda-workflow-engine"
+  namespace              = "camunda"
+  hostname               = local.camunda_hostname
+  zeebe_hostname         = local.zeebe_hostname
+  gateway_name           = module.camunda_gateway.gateway_name
+  gateway_listener_names = local.camunda_listeners
   keycloak = {
     public_url   = module.kubernetes_identity_management.public_url
     service_host = module.kubernetes_identity_management.service_host
@@ -159,4 +196,11 @@ module "camunda_workflow_engine" {
   webmodeler_mail_from_address = var.webmodeler_mail_from_address
   camunda_initial_user         = var.camunda_initial_user
   zeebe_config                 = var.zeebe_config
+
+  depends_on = [
+    module.stackit_postgres_webmodeler,
+    module.kubernetes_messaging,
+    module.kubernetes_secret_management,
+    module.kubernetes_identity_management
+  ]
 }
