@@ -82,6 +82,6 @@ variable "acl" {
 }
 
 variable "secret_store_path" {
-  description = "Name of the ESO ClusterSecretStore used to resolve ExternalSecret references within this module."
+  description = "Mount path of the Secrets Manager KV engine (the Secrets Manager instance ID) to write the credentials to."
   type        = string
 }

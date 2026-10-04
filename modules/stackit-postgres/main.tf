@@ -1,11 +1,6 @@
-locals {
-  credentials_kv_secret = "${var.instance_name}-credentials"
-}
-
 resource "stackit_postgresflex_instance" "main" {
   project_id      = var.project_id
   name            = var.instance_name
-  acl             = var.acl
   backup_schedule = var.backup_schedule
   flavor          = var.postgres_flavor
   replicas        = var.replicas
@@ -13,7 +8,10 @@ resource "stackit_postgresflex_instance" "main" {
     class = var.postgres_storage_class
     size  = var.postgres_storage_size
   }
-  version = 17
+  version = "17"
+  network = {
+    acl = var.acl
+  }
 }
 
 resource "stackit_postgresflex_user" "main" {

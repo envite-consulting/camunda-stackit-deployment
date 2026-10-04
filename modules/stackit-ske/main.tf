@@ -11,6 +11,7 @@ resource "stackit_ske_cluster" "main" {
       maximum            = var.node_pools_maximum
       availability_zones = var.ske_availability_zones
       volume_type        = var.ske_volume_type
+      volume_size        = var.ske_volume_size
     }
   ]
   maintenance = {

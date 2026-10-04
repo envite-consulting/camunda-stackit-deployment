@@ -1,10 +1,14 @@
-locals {
-  secretsmanager_token_secret = "secretsmanager-token"
-}
-
 resource "stackit_secretsmanager_instance" "main" {
   project_id = var.project_id
   name       = var.name
+}
+
+# The vault provider logs in with this user once per Terraform run, and the token it gets expires. If the user (and
+# with it the login) came early in a fresh apply, the token would expire before the credentials of the database
+# instances, which take long to create, are written (403 permission denied). Creating the user after those instances
+# keeps the login close to the writes.
+resource "terraform_data" "user_after" {
+  input = var.create_user_after
 }
 
 resource "stackit_secretsmanager_user" "main" {
@@ -12,55 +16,6 @@ resource "stackit_secretsmanager_user" "main" {
   instance_id   = stackit_secretsmanager_instance.main.instance_id
   description   = "Terraform automation user"
   write_enabled = true
-}
 
-resource "kubernetes_namespace_v1" "secret_store" {
-  metadata {
-    name = var.namespace
-  }
-}
-
-resource "kubernetes_secret_v1" "vault_token" {
-  metadata {
-    name      = local.secretsmanager_token_secret
-    namespace = kubernetes_namespace_v1.secret_store.metadata[0].name
-  }
-
-  data = {
-    token = stackit_secretsmanager_user.main.password
-  }
-
-  type = "Opaque"
-}
-
-
-resource "kubectl_manifest" "secret_store_camunda" {
-  yaml_body = yamlencode({
-    apiVersion = "external-secrets.io/v1"
-    kind       = "ClusterSecretStore"
-    metadata = {
-      name = var.secret_store_path
-    }
-    spec = {
-      provider = {
-        vault = {
-          server  = "https://prod.sm.eu01.stackit.cloud"
-          path    = stackit_secretsmanager_user.main.instance_id
-          version = "v2"
-
-          auth = {
-            userPass = {
-              path     = "userpass"
-              username = stackit_secretsmanager_user.main.username
-              secretRef = {
-                name      = kubernetes_secret_v1.vault_token.metadata[0].name
-                key       = "token"
-                namespace = kubernetes_namespace_v1.secret_store.metadata[0].name
-              }
-            }
-          }
-        }
-      }
-    }
-  })
+  depends_on = [terraform_data.user_after]
 }

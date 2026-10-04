@@ -1,6 +1,18 @@
+locals {
+  os = regex(
+    "^(?P<protocol>[a-z]+)://(?:(?P<username>[^:@/]+):(?P<password>[^@/]+)@)?(?P<host>[^:/]+):(?P<port>[0-9]+)",
+    stackit_opensearch_credential.main.host
+  )
+}
+
+output "protocol" {
+  description = "The protocol of the OpenSearch instance"
+  value       = local.os["protocol"]
+}
+
 output "host" {
   description = "The host of the OpenSearch instance"
-  value       = stackit_opensearch_credential.main.host
+  value       = local.os["host"]
 }
 
 output "port" {

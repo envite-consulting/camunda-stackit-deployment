@@ -8,17 +8,8 @@ variable "name" {
   type        = string
 }
 
-variable "secret_store_path" {
-  description = "Name of the ESO ClusterSecretStore created for this Secrets Manager instance. Used by other modules to reference this store in ExternalSecret resources."
-  type        = string
-}
-
-variable "namespace" {
-  description = "Kubernetes namespace in which the ESO ClusterSecretStore and related resources are deployed."
-  type        = string
-
-  validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.namespace))
-    error_message = "namespace must consist of lowercase alphanumeric characters or hyphens."
-  }
+variable "create_user_after" {
+  description = "Values of the resources whose credentials are written to Secrets Manager. The user, and with it the login of the vault provider, is created only once they are known. Must not depend on anything written through the vault provider."
+  type        = list(string)
+  default     = []
 }

@@ -9,13 +9,13 @@ variable "environment" {
 }
 
 variable "stackit_region" {
-  description = "STACKIT region in which all resources are provisioned."
+  description = "STACKIT region in which the resources are provisioned. The state backend (versions.tf / config.s3.tfbackend) and the Secrets Manager API endpoint are configured separately."
   type        = string
   default     = "eu01"
 }
 
 variable "dns_name" {
-  description = "Public DNS name used for Camunda ingress (e.g. 'camunda.example.com')."
+  description = "Name of the STACKIT DNS zone created for this deployment (e.g. 'camunda.example.com')."
   type        = string
 }
 
@@ -35,6 +35,12 @@ variable "ske_volume_type" {
   description = "Block volume type attached to SKE worker nodes."
   type        = string
   default     = "storage_premium_perf2"
+}
+
+variable "ske_volume_size" {
+  description = "Size in GB of the block volume attached to SKE worker nodes. The provider default of 20 GB is too small for the Camunda stack and leads to node disk pressure."
+  type        = number
+  default     = 100
 }
 
 variable "ske_availability_zones" {
@@ -72,12 +78,6 @@ variable "keycloak_initial_admin_username" {
   type        = string
 }
 
-variable "keycloak_realm" {
-  description = "Name of the Keycloak realm used for Camunda OIDC authentication (e.g. 'camunda-platform')."
-  type        = string
-  default     = "camunda-platform"
-}
-
 variable "camunda_initial_user" {
   description = "Initial Camunda platform user created on first startup. All fields are required."
   type = object({
@@ -89,18 +89,18 @@ variable "camunda_initial_user" {
 }
 
 variable "zeebe_config" {
-  description = "Zeebe broker sizing configuration. Increase replication_factor and partition_count for production clusters."
+  description = "Zeebe broker sizing: number of brokers, partitions, replication factor and volume size per broker. Increase for production clusters."
   type = object({
-    replicas           = number
-    replication_factor = string
-    partition_count    = string
-    pvc_size_gb        = string
+    cluster_size       = number
+    partition_count    = number
+    replication_factor = number
+    pvc_size           = string
   })
   default = {
-    replicas           = 1
-    replication_factor = "1"
-    partition_count    = "1"
-    pvc_size_gb        = "10Gi"
+    cluster_size       = 1
+    partition_count    = 1
+    replication_factor = 1
+    pvc_size           = "10Gi"
   }
 }
 
@@ -147,13 +147,13 @@ variable "opensearch_plan" {
 }
 
 variable "sa_key_file_name" {
-  description = "Path to the STACKIT service account key file (JSON) used for provider authentication."
+  description = "Path to the STACKIT service account key file (JSON) used for provider authentication. Never commit this file"
   type        = string
   default     = "sa_key.json"
 }
 
 variable "webmodeler_mail_from_address" {
-  description = "Email address used as the sender of emails sent by Web Modeler."
+  description = "Sender address of emails sent by Web Modeler. Required by the Camunda chart even without a mail server."
   type        = string
   default     = "noreply@example.com"
 }

@@ -9,6 +9,6 @@ variable "name" {
 }
 
 variable "dns_name" {
-  description = "Fully qualified domain name (FQDN) of the DNS zone. Must end with a trailing dot (e.g. 'camunda.example.com.')."
+  description = "Name of the DNS zone (e.g. 'camunda.example.com'). The zone must be delegated to the STACKIT name servers."
   type        = string
 }
