@@ -18,9 +18,17 @@ variable "zeebe_hostname" {
   type        = string
 }
 
-variable "cert_manager_cluster_issuer" {
-  description = "Name of the cert-manager ClusterIssuer used to provision TLS certificates for Camunda ingress resources."
+variable "gateway_name" {
+  description = "Name of the Gateway (in this module's namespace) that the chart's routes and the Envoy policies attach to."
   type        = string
+}
+
+variable "gateway_listener_names" {
+  description = "Listener names of the Gateway: web for the HTTPRoutes, grpc for the Zeebe GRPCRoute. The chart's routes use 'https' and 'grpcs'."
+  type = object({
+    web  = string
+    grpc = string
+  })
 }
 
 variable "keycloak" {

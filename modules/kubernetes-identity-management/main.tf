@@ -1,9 +1,8 @@
 locals {
   public_url = "https://${var.hostname}"
 
-  service_name       = "${kubectl_manifest.keycloak.name}-service"
-  http_port          = 8080
-  ingress_tls_secret = "keycloak-tls"
+  service_name = "${kubectl_manifest.keycloak.name}-service"
+  http_port    = 8080
 }
 
 resource "kubectl_manifest" "keycloak" {
@@ -22,8 +21,9 @@ resource "kubectl_manifest" "keycloak" {
         }
       }
       db = {
-        vendor = "postgres"
-        host   = var.postgres_host
+        vendor   = "postgres"
+        host     = var.postgres_host
+        database = var.postgres_database
         usernameSecret = {
           name = local.postgres_credentials_secret
           key  = "username"
@@ -39,7 +39,7 @@ resource "kubectl_manifest" "keycloak" {
       }
 
       ingress = {
-        tlsSecret = local.ingress_tls_secret
+        enabled = false
       }
 
       hostname = {
@@ -54,42 +54,26 @@ resource "kubectl_manifest" "keycloak" {
   })
 }
 
-resource "kubernetes_ingress_v1" "keycloak_ingress" {
-  metadata {
-    name      = "keycloak"
-    namespace = var.namespace
-    annotations = {
-      "kubernetes.io/ingress.class"    = "nginx"
-      "cert-manager.io/cluster-issuer" = var.cert_manager_cluster_issuer
+resource "kubectl_manifest" "keycloak_httproute" {
+  yaml_body = yamlencode({
+    apiVersion = "gateway.networking.k8s.io/v1"
+    kind       = "HTTPRoute"
+    metadata = {
+      name      = "keycloak"
+      namespace = var.namespace
     }
-  }
-
-  spec {
-    ingress_class_name = "nginx"
-
-    tls {
-      hosts       = [var.hostname]
-      secret_name = local.ingress_tls_secret
+    spec = {
+      parentRefs = [{
+        name        = var.gateway_name
+        sectionName = var.gateway_listener_name
+      }]
+      hostnames = [var.hostname]
+      rules = [{
+        backendRefs = [{
+          name = local.service_name
+          port = local.http_port
+        }]
+      }]
     }
-
-    rule {
-      host = var.hostname
-
-      http {
-        path {
-          path      = "/"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = local.service_name
-              port {
-                number = local.http_port
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  })
 }

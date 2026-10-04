@@ -8,11 +8,6 @@ variable "hostname" {
   type        = string
 }
 
-variable "cert_manager_cluster_issuer" {
-  description = "Name of the cert-manager ClusterIssuer used to provision the TLS certificate for the Keycloak ingress."
-  type        = string
-}
-
 variable "initial_admin_name" {
   description = "Username of the initial Keycloak admin account bootstrapped on first startup."
   type        = string
@@ -35,5 +30,20 @@ variable "postgres_credentials_kv_secret" {
 
 variable "postgres_host" {
   description = "Hostname of the PostgreSQL instance used as the Keycloak database."
+  type        = string
+}
+
+variable "postgres_database" {
+  description = "Name of the PostgreSQL database used by Keycloak."
+  type        = string
+}
+
+variable "gateway_name" {
+  description = "Name of the Gateway (in this module's namespace) that the Keycloak HTTPRoute attaches to."
+  type        = string
+}
+
+variable "gateway_listener_name" {
+  description = "Name of the Gateway listener serving the Keycloak hostname. Used as sectionName of the HTTPRoute."
   type        = string
 }
