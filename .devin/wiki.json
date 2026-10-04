@@ -26,7 +26,7 @@
     },
     {
       "title": "Architecture Overview",
-      "purpose": "Detailed description of the layered architecture: STACKIT cloud foundation, Terraform orchestration layer, Kubernetes (SKE) compute layer, and Camunda 8 application layer. Covers the PlantUML component diagram and how all services relate to each other.",
+      "purpose": "Detailed description of the layered architecture: STACKIT cloud foundation, Terraform orchestration layer, Kubernetes (SKE) compute layer, and Camunda 8 application layer. Covers the Mermaid diagram in docs/architecture-overview.mermaid and how all services relate to each other.",
       "parent": "Overview",
       "page_notes": [
         {
@@ -65,7 +65,7 @@
     },
     {
       "title": "Provider and Version Configuration",
-      "purpose": "Covers versions.tf: Terraform version lock (1.14.7), provider version constraints (stackit ~>0.80.0, helm, kubernetes, kubectl, vault), S3 backend configuration, and the provider dependency chain that ties SKE and Secrets Manager outputs to application-layer providers.",
+      "purpose": "Covers versions.tf: Terraform version lock (1.16.3), provider version constraints (stackit ~>0.117, helm, kubernetes, kubectl, vault), S3 backend configuration, and the provider dependency chain that ties SKE and Secrets Manager outputs to application-layer providers.",
       "parent": "Environment Configuration",
       "page_notes": [
         {
@@ -75,7 +75,7 @@
     },
     {
       "title": "Input Variables and Example Configuration",
-      "purpose": "Reference for all input variables defined in variables.tf: project_id, dns_name, environment, SKE sizing, Zeebe cluster topology, Keycloak settings, PostgreSQL flavor/storage, OpenSearch plan, and Web Modeler mail. Includes annotated terraform.tfvars.example and config.s3.example.tfbackend.",
+      "purpose": "Reference for all input variables defined in variables.tf: project_id, dns_name, environment, SKE sizing, Zeebe cluster topology, Keycloak admin, PostgreSQL flavor/storage, OpenSearch plan, and Web Modeler mail. Includes annotated terraform.tfvars.example and config.s3.example.tfbackend.",
       "parent": "Environment Configuration",
       "page_notes": [
         {
@@ -124,7 +124,7 @@
     },
     {
       "title": "Kubernetes Platform Modules",
-      "purpose": "Documents the Kubernetes-layer platform modules: kubernetes-ingress (ingress-nginx Helm chart, cert-manager, Let's Encrypt ClusterIssuer, HTTP01 solver), kubernetes-secret-management (External Secrets Operator Helm chart, namespace), kubernetes-messaging (NATS Helm chart, namespace), and stackit-secrets-manager (STACKIT Secrets Manager instance, ClusterSecretStore wiring for ESO).",
+      "purpose": "Documents the Kubernetes-layer platform modules: kubernetes-ingress (ingress-nginx Helm chart, cert-manager, Let's Encrypt ClusterIssuer, HTTP01 solver), kubernetes-secret-management (External Secrets Operator Helm chart and the ClusterSecretStore for STACKIT Secrets Manager), kubernetes-messaging (NATS Helm chart, namespace), and stackit-secrets-manager (STACKIT Secrets Manager instance and user).",
       "parent": "Terraform Modules",
       "page_notes": [
         {
@@ -143,7 +143,7 @@
     },
     {
       "title": "STACKIT Secrets Manager and Vault Integration",
-      "purpose": "Explains how the STACKIT Secrets Manager (Vault-compatible) is provisioned, how a service user is created with write access, how the password is bridged into a Kubernetes Opaque secret, and how the ClusterSecretStore is configured with userpass authentication pointing to the STACKIT Vault endpoint.",
+      "purpose": "Explains how the STACKIT Secrets Manager (Vault-compatible) is provisioned, how a service user is created with write access, how the kubernetes-secret-management module stores its password in a Kubernetes Secret and configures the ClusterSecretStore with userpass authentication against the STACKIT Vault endpoint.",
       "parent": "Secret Management Architecture",
       "page_notes": [
         {

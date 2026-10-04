@@ -1,3 +1,8 @@
+locals {
+  initial_admin_credentials_secret = "keycloak-initial-admin-credentials"
+  postgres_credentials_secret      = "postgres-credentials"
+}
+
 resource "random_password" "keycloak_admin_password" {
   length           = 16
   special          = true
@@ -14,54 +19,28 @@ resource "vault_kv_secret_v2" "keycloak_initial_admin_credentials" {
   })
 }
 
-resource "kubectl_manifest" "external_secret_keycloak" {
-  yaml_body = yamlencode({
-    apiVersion = "external-secrets.io/v1"
-    kind       = "ExternalSecret"
-    metadata = {
-      name      = "es-${local.initial_admin_credentials_secret}"
-      namespace = var.namespace
-    }
-    spec = {
-      refreshInterval = "10s"
-      secretStoreRef = {
-        name = var.secret_store_path
-        kind = "ClusterSecretStore"
-      }
-      target = {
-        name           = local.initial_admin_credentials_secret
-        creationPolicy = "Owner"
-      }
-      dataFrom = [{ extract = { key = vault_kv_secret_v2.keycloak_initial_admin_credentials.name } }]
-    }
-  })
-}
+resource "kubectl_manifest" "external_secret" {
+  for_each = {
+    (local.initial_admin_credentials_secret) = vault_kv_secret_v2.keycloak_initial_admin_credentials.name
+    (local.postgres_credentials_secret)      = var.postgres_credentials_kv_secret
+  }
 
-resource "kubectl_manifest" "external_secret_postgres_keycloak" {
   yaml_body = yamlencode({
     apiVersion = "external-secrets.io/v1"
     kind       = "ExternalSecret"
     metadata = {
-      name      = "es-${local.postgres_credentials_secret}"
+      name      = "es-${each.key}"
       namespace = var.namespace
     }
     spec = {
-      refreshInterval = "10s"
       secretStoreRef = {
-        name = var.secret_store_path
         kind = "ClusterSecretStore"
+        name = var.cluster_secret_store_name
       }
       target = {
-        name           = local.postgres_credentials_secret
-        creationPolicy = "Owner"
+        name = each.key
       }
-      dataFrom = [
-        {
-          extract = {
-            key = var.postgres_credentials_kv_secret
-          }
-        },
-      ]
+      dataFrom = [{ extract = { key = each.value } }]
     }
   })
 }

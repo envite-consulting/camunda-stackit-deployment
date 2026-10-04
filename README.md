@@ -9,19 +9,21 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
 # Table of Contents
 
 * [Local requirements](#local-requirements)
-  * [`Terraform` Installation](#terraform-installation)
-  * [`STACKIT CLI` Installation](#stackit-cli-installation)
+    * [`Terraform` Installation](#terraform-installation)
+    * [`STACKIT CLI` Installation](#stackit-cli-installation)
 * [STACKIT Access & Project Configuration](#stackit-access--project-configuration)
-  * [Create a service account for Terraform](#create-a-service-account-for-terraform)
+* [Service accounts](#service-accounts)
+    * [Create a service account for Terraform](#create-a-service-account-for-terraform)
 * [Terraform Backend (STACKIT Object Storage / S3)](#terraform-backend-stackit-object-storage--s3)
-  * [Credentials Group for Terraform State](#credentials-group-for-terraform-state)
-  * [Create S3 Credentials](#create-s3-credentials)
-  * [Configure Terraform Backend](#configure-terraform-backend)
+    * [Credentials Group for Terraform State](#credentials-group-for-terraform-state)
+    * [Create S3 Credentials](#create-s3-credentials)
+    * [Configure Terraform Backend](#configure-terraform-backend)
 * [Terraform Infrastructure Deployment](#terraform-infrastructure-deployment)
-  * [Terraform apply](#terraform-apply)
-  * [Destroy / Ressourcen cleanup:](#destroy--ressourcen-cleanup)
+    * [Terraform apply](#terraform-apply)
+    * [Destroy / Ressourcen cleanup:](#destroy--ressourcen-cleanup)
 * [Kubernetes Access](#kubernetes-access)
 * [Accessing Camunda Console](#accessing-camunda-console)
+* [References for later extensions](#references-for-later-extensions)
 
 ## Local requirements
 
@@ -29,7 +31,7 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
 
 Documentation: [Install Terraform](https://developer.hashicorp.com/terraform/install)
 
-Required version: "1.14.7"
+Required version: "1.16.3"
 
 ### `STACKIT CLI` Installation
 
@@ -50,29 +52,43 @@ stackit config set --project-id <PROJECT-ID>
 
 ---
 
-### Create a service account for Terraform
+## Service accounts
+
+The deployment uses one service account:
+
+| Service account | Used by | Role | Key file | Variable |
+|---|---|---|---|---|
+| terraform | Terraform, to provision all resources | `editor` | `sa_key.json` | `sa_key_file_name` |
+
+> [!WARNING]
+> If this service account already exists in the team, **do not create a new one**. Copy its existing key file into `environments/<environment>/` instead; if the file name differs, set the variable from the table above.
+>
+> Key files are matched by `.gitignore` (`sa_key*.json`). **Never commit them.**
+
+> [!NOTE]
+> On Windows, run these commands in PowerShell 7 (`pwsh`) or a Bash shell. Windows PowerShell 5.1 writes redirected output (`>`) as UTF-16, which Terraform's `file()` function rejects as invalid UTF-8.
 
 Documentation: [Create a Service Account](https://docs.stackit.cloud/stackit/en/create-a-service-account-134415839.html)
 
-> [!WARNING]
-> If a service account already exists in the team, **no new service account needs to be created**.  
-> In this case, the **existing `sa_key.json`** is used.
->
-> Requirements:
-> - Access to the existing `sa_key.json`
-> - File is available locally
-> - File is entered in `.gitignore`
+### Create a service account for Terraform
 
-Create a new Service Account:
+Create a new service account:
 
 ```bash
 stackit service-account create --name <SERVICE_ACCOUNT_NAME>
 ```
 
-Add service account to the project:
+Add the service account to the project:
 
 ```bash
 stackit project member add <SERVICE_ACCOUNT_NAME>@sa.stackit.cloud --role editor
+```
+
+Create a key for the service account:
+
+```bash
+cd environments/<environment>/
+stackit service-account key create --email <SERVICE_ACCOUNT_NAME>@sa.stackit.cloud > sa_key.json
 ```
 
 ---
@@ -147,16 +163,7 @@ bucket     = "tfstate-bucket-camunda-ske-deployment"
 key        = "camunda_ske_deployment.tfstate"
 ```
 
-Configure remaining terraform variables by copying `terraform.example.tfvars` to `terraform.tfvars` (`cp environments/<environment>/terraform.example.tfvars environments/<environment>/terraform.tfvars`) and replacing the placeholders.
-
-Create Service Account Key or reference:
-
-```bash
-cd environments/<environment>/
-stackit service-account key create --email <SERVICE_ACCOUNT_NAME>@sa.stackit.cloud > sa_key.json
-```
-
-If you already have one, you could copy it and adopt the name if necessary in [`variables.tf`](./environments/<environment>/variables.tf) (`sa_key_file_name`).
+Configure the remaining Terraform variables by copying `terraform.tfvars.example` to `terraform.tfvars` (`cp environments/<environment>/terraform.tfvars.example environments/<environment>/terraform.tfvars`) and replacing the placeholders.
 
 ---
 
@@ -209,10 +216,9 @@ stackit ske kubeconfig create <environment> --login
 
 1. Access the Camunda Console via `https://<dns_name>/console`.
 
-   The `dns_name` value is provided as an input variable to the `camunda-workflow-engine` module.  
-   This value is environment-specific and is typically set through Terraform variables (for example in the target environment's `terraform.tfvars`).
+   `dns_name` is a variable of the environment, set in its `terraform.tfvars`.
 
-2. Log in with the initial Camunda user defined through the `camunda_initial_user` input variable passed to the `camunda-workflow-engine` module.  
+2. Log in with the initial Camunda user defined by the `camunda_initial_user` variable.  
    The login username is taken from the `username` field of that input variable (`camunda_initial_user.username`).
 
    The password is generated automatically and can be viewed in the STACKIT Secrets Manager portal:

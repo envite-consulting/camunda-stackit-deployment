@@ -4,7 +4,7 @@ terraform {
   required_providers {
     stackit = {
       source  = "stackitcloud/stackit"
-      version = ">= 0.1.0"
+      version = ">= 0.109.0"
     }
     vault = {
       source  = "hashicorp/vault"

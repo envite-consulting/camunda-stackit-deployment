@@ -37,7 +37,7 @@ override.tf.json
 .terraformrc
 terraform.rc
 config.s3.tfbackend
-sa_key.json
+sa_key*.json
 
 # IntelliJ
 .DS_Store

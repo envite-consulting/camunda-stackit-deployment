@@ -16,5 +16,5 @@ terraform {
 variable "nats_chart_version" {
   description = "Helm chart version for NATS. Since chart 2.12, major.minor aligns with NATS Server version. See https://github.com/nats-io/k8s/releases"
   type        = string
-  default     = "2.12.5"
+  default     = "2.14.6"
 }

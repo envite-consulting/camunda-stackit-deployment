@@ -10,11 +10,15 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = ">= 2.0.0"
     }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.19"
+    }
   }
 }
 
 variable "external_secrets_chart_version" {
-  description = "Helm chart version for external-secrets. ESO only supports the latest minor version — plan upgrades accordingly. See https://github.com/external-secrets/external-secrets/releases"
+  description = "Helm chart version for external-secrets. Only the latest minor version is supported. See https://github.com/external-secrets/external-secrets/releases"
   type        = string
-  default     = "1.3.2"
+  default     = "2.11.0"
 }

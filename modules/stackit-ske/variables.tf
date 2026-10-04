@@ -36,6 +36,16 @@ variable "ske_volume_type" {
   type        = string
 }
 
+variable "ske_volume_size" {
+  description = "Size in GB of the block volume attached to SKE worker nodes. Holds container images, logs and emptyDir data; too small a volume puts the node under disk pressure and blocks scheduling."
+  type        = number
+
+  validation {
+    condition     = var.ske_volume_size >= 20
+    error_message = "ske_volume_size must be at least 20 GB."
+  }
+}
+
 variable "node_pools_minimum" {
   description = "Minimum number of worker nodes in the SKE node pool. Used as the autoscaler lower bound. Must be a numeric string (e.g. '1')."
   type        = string
@@ -62,7 +72,7 @@ variable "node_pools_maximum" {
 }
 
 variable "dns_zones" {
-  description = "List of STACKIT DNS zone IDs registered with the SKE DNS extension. Enables automatic DNS record management for ingress resources."
+  description = "Names of the STACKIT DNS zones in which the SKE DNS extension (ExternalDNS) may create records."
   type        = list(string)
 
   validation {

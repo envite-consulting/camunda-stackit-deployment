@@ -1,15 +1,17 @@
 locals {
-  host_name = "${var.hostname_prefix}.${var.dns_name}"
+  public_url = "https://${var.hostname}"
 
-  initial_admin_credentials_secret = "keycloak-initial-admin-credentials"
-  postgres_credentials_secret      = "postgres-credentials"
-  ingress_tls_secret               = "keycloak-tls"
+  service_name       = "${kubectl_manifest.keycloak.name}-service"
+  http_port          = 8080
+  ingress_tls_secret = "keycloak-tls"
+}
 
-  keycloak_manifest = {
-    apiVersion = "k8s.keycloak.org/v2alpha1"
+resource "kubectl_manifest" "keycloak" {
+  yaml_body = yamlencode({
+    apiVersion = "k8s.keycloak.org/v2beta1"
     kind       = "Keycloak"
     metadata = {
-      name      = var.name
+      name      = "camunda-keycloak"
       namespace = var.namespace
     }
     spec = {
@@ -41,7 +43,7 @@ locals {
       }
 
       hostname = {
-        hostname           = "https://${local.host_name}"
+        hostname           = local.public_url
         backchannelDynamic = true
       }
 
@@ -49,7 +51,7 @@ locals {
         headers = "xforwarded"
       }
     }
-  }
+  })
 }
 
 resource "kubernetes_ingress_v1" "keycloak_ingress" {
@@ -66,12 +68,12 @@ resource "kubernetes_ingress_v1" "keycloak_ingress" {
     ingress_class_name = "nginx"
 
     tls {
-      hosts       = [local.host_name]
+      hosts       = [var.hostname]
       secret_name = local.ingress_tls_secret
     }
 
     rule {
-      host = local.host_name
+      host = var.hostname
 
       http {
         path {
@@ -80,9 +82,9 @@ resource "kubernetes_ingress_v1" "keycloak_ingress" {
 
           backend {
             service {
-              name = var.service_name
+              name = local.service_name
               port {
-                number = 8080
+                number = local.http_port
               }
             }
           }
@@ -91,13 +93,3 @@ resource "kubernetes_ingress_v1" "keycloak_ingress" {
     }
   }
 }
-
-resource "kubectl_manifest" "keycloak" {
-  yaml_body = yamlencode(local.keycloak_manifest)
-
-  depends_on = [
-    kubernetes_ingress_v1.keycloak_ingress
-  ]
-}
-
-
