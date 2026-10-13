@@ -1,12 +1,12 @@
 locals {
   camunda_passwords_secret                  = "camunda-passwords"
   opensearch_credentials_secret             = "opensearch-credentials"
-  postgres_webmodeler_credentials_secret    = "postgres-webmodeler-credentials"
+  postgres_hub_credentials_secret           = "postgres-camunda-hub-credentials"
   keycloak_initial_admin_credentials_secret = "keycloak-initial-admin-credentials"
 }
 
 resource "random_password" "camunda" {
-  for_each = toset(["firstUser", "identityConnectors", "identityOrchestration", "identityOptimize", "identityConsole"])
+  for_each = toset(["firstUser", "identityConnectors", "identityOrchestration", "identityOptimize"])
 
   length           = 16
   special          = true
@@ -23,7 +23,7 @@ resource "kubectl_manifest" "external_secret" {
   for_each = {
     (local.camunda_passwords_secret)                  = vault_kv_secret_v2.camunda_passwords.name
     (local.opensearch_credentials_secret)             = var.opensearch.credentials_kv_secret
-    (local.postgres_webmodeler_credentials_secret)    = var.webmodeler_postgres.credentials_kv_secret
+    (local.postgres_hub_credentials_secret)           = var.hub_postgres.credentials_kv_secret
     (local.keycloak_initial_admin_credentials_secret) = var.keycloak_initial_admin_password_kv_secret
   }
 

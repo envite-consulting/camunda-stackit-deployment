@@ -10,7 +10,8 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
 
 | Camunda | Where |
 |---|---|
-| 8.9 | `main` (current) |
+| 8.10 | `main` (current) |
+| 8.9 | tag [`camunda-8.9`](../../tree/camunda-8.9) |
 | 8.8 | tag [`camunda-8.8`](../../tree/camunda-8.8) |
 
 # Table of Contents
@@ -30,7 +31,7 @@ Provision of reference configurations and examples for deploying Camunda 8 on [S
     * [Terraform apply](#terraform-apply)
     * [Destroy / Ressourcen cleanup:](#destroy--ressourcen-cleanup)
 * [Kubernetes Access](#kubernetes-access)
-* [Accessing Camunda Console](#accessing-camunda-console)
+* [Accessing Camunda Hub](#accessing-camunda-hub)
 * [Public endpoints](#public-endpoints)
 * [References for later extensions](#references-for-later-extensions)
 
@@ -247,9 +248,9 @@ stackit ske kubeconfig create <environment> --login
 
 ---
 
-## Accessing Camunda Console
+## Accessing Camunda Hub
 
-1. Access the Camunda Console via `https://<dns_name>/console`.
+1. Access Camunda Hub via `https://<dns_name>/hub`. Since 8.10, Hub serves both Web Modeler and Console. `https://<dns_name>` redirects there as well.
 
    `dns_name` is a variable of the environment, set in its `terraform.tfvars`.
 
@@ -269,7 +270,7 @@ stackit ske kubeconfig create <environment> --login
 
 | Hostname | Served by | Gateway / listener |
 |---|---|---|
-| `<dns_name>` | Camunda web applications and REST API (`/operate`, `/tasklist`, `/optimize`, `/modeler`, `/console`, `/managementidentity`, ...) | `camunda-gateway` / `https` |
+| `<dns_name>` | Camunda web applications and REST API (`/operate`, `/tasklist`, `/optimize`, `/hub`, `/managementidentity`, ...) | `camunda-gateway` / `https` |
 | `zeebe.<dns_name>` | Zeebe gRPC API | `camunda-gateway` / `grpcs` |
 | `keycloak.<dns_name>` | Keycloak | `keycloak-gateway` / `https` |
 

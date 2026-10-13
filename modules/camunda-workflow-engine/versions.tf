@@ -26,7 +26,7 @@ terraform {
 }
 
 variable "camunda_platform_chart_version" {
-  description = "Helm chart version for camunda-platform. Chart 14.x deploys Camunda 8.9. See https://helm.camunda.io/camunda-platform/version-matrix/"
+  description = "Helm chart version for camunda-platform. Chart 15.x deploys Camunda 8.10. See https://helm.camunda.io/camunda-platform/version-matrix/"
   type        = string
-  default     = "14.11.0"
+  default     = "15.0.0"
 }

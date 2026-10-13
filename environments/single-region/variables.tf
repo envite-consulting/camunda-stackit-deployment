@@ -158,8 +158,8 @@ variable "cert_manager_sa_key_file_name" {
   default     = "sa_key_cert_manager.json"
 }
 
-variable "webmodeler_mail_from_address" {
-  description = "Sender address of emails sent by Web Modeler. Required by the Camunda chart even without a mail server."
+variable "camunda_hub_mail_from_address" {
+  description = "Sender address of emails sent by Camunda Hub. Required by the Camunda chart even without a mail server."
   type        = string
   default     = "noreply@example.com"
 }

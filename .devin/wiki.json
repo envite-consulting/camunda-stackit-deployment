@@ -75,7 +75,7 @@
     },
     {
       "title": "Input Variables and Example Configuration",
-      "purpose": "Reference for all input variables defined in variables.tf: project_id, dns_name, environment, SKE sizing, Zeebe cluster topology, Keycloak admin, PostgreSQL flavor/storage, OpenSearch plan, and Web Modeler mail. Includes annotated terraform.tfvars.example and config.s3.example.tfbackend.",
+      "purpose": "Reference for all input variables defined in variables.tf: project_id, dns_name, environment, SKE sizing, Zeebe cluster topology, Keycloak admin, PostgreSQL flavor/storage, OpenSearch plan, and Camunda Hub mail. Includes annotated terraform.tfvars.example and config.s3.example.tfbackend.",
       "parent": "Environment Configuration",
       "page_notes": [
         {
@@ -153,7 +153,7 @@
     },
     {
       "title": "External Secrets Operator and ExternalSecret Resources",
-      "purpose": "Covers the External Secrets Operator (ESO) deployment, the ClusterSecretStore resource, and how ExternalSecret manifests are used to synchronize Vault KV secrets into Kubernetes namespaces. Details the four ExternalSecret resources in the camunda-workflow-engine module: camunda-passwords, opensearch-credentials, postgres-webmodeler-credentials, and keycloak-initial-admin-credentials.",
+      "purpose": "Covers the External Secrets Operator (ESO) deployment, the ClusterSecretStore resource, and how ExternalSecret manifests are used to synchronize Vault KV secrets into Kubernetes namespaces. Details the four ExternalSecret resources in the camunda-workflow-engine module: camunda-passwords, opensearch-credentials, postgres-hub-credentials, and keycloak-initial-admin-credentials.",
       "parent": "Secret Management Architecture",
       "page_notes": [
         {
