@@ -38,7 +38,7 @@ module "stackit_secrets_manager" {
   name       = "camunda-secrets-${var.environment}"
   create_user_after = [
     module.stackit_postgres_keycloak.db_username,
-    module.stackit_postgres_webmodeler.db_username,
+    module.stackit_postgres_camunda_hub.db_username,
     module.stackit_opensearch.username,
   ]
 }
@@ -58,7 +58,7 @@ module "stackit_postgres_keycloak" {
   postgres_username      = "postgres-user"
 }
 
-module "stackit_postgres_webmodeler" {
+module "stackit_postgres_camunda_hub" {
   source                 = "../../modules/stackit-postgres"
   project_id             = var.project_id
   acl                    = module.stackit_ske.egress_address_ranges
@@ -68,8 +68,8 @@ module "stackit_postgres_webmodeler" {
   replicas               = var.replicas
   secret_store_path      = module.stackit_secrets_manager.instance_id
   backup_schedule        = var.backup_schedule
-  database_names         = ["webmodeler"]
-  instance_name          = "webmodeler-postgres-${var.environment}"
+  database_names         = ["hub"]
+  instance_name          = "camunda-hub-postgres-${var.environment}"
   postgres_username      = "postgres-user"
 }
 
@@ -186,19 +186,19 @@ module "camunda_workflow_engine" {
     username              = module.stackit_opensearch.username
     credentials_kv_secret = module.stackit_opensearch.credentials_kv_secret
   }
-  webmodeler_postgres = {
-    host                  = module.stackit_postgres_webmodeler.db_host
-    port                  = module.stackit_postgres_webmodeler.db_port
-    database              = one(module.stackit_postgres_webmodeler.database_names)
-    username              = module.stackit_postgres_webmodeler.db_username
-    credentials_kv_secret = module.stackit_postgres_webmodeler.postgres_credentials_kv_secret
+  hub_postgres = {
+    host                  = module.stackit_postgres_camunda_hub.db_host
+    port                  = module.stackit_postgres_camunda_hub.db_port
+    database              = one(module.stackit_postgres_camunda_hub.database_names)
+    username              = module.stackit_postgres_camunda_hub.db_username
+    credentials_kv_secret = module.stackit_postgres_camunda_hub.postgres_credentials_kv_secret
   }
-  webmodeler_mail_from_address = var.webmodeler_mail_from_address
-  camunda_initial_user         = var.camunda_initial_user
-  zeebe_config                 = var.zeebe_config
+  hub_mail_from_address = var.camunda_hub_mail_from_address
+  camunda_initial_user  = var.camunda_initial_user
+  zeebe_config          = var.zeebe_config
 
   depends_on = [
-    module.stackit_postgres_webmodeler,
+    module.stackit_postgres_camunda_hub,
     module.kubernetes_messaging,
     module.kubernetes_secret_management,
     module.kubernetes_identity_management

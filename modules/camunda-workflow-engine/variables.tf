@@ -71,8 +71,8 @@ variable "opensearch" {
   })
 }
 
-variable "webmodeler_postgres" {
-  description = "PostgreSQL database of Web Modeler. The password is read from credentials_kv_secret."
+variable "hub_postgres" {
+  description = "PostgreSQL database of Camunda Hub. The password is read from credentials_kv_secret."
   type = object({
     host                  = string
     port                  = number
@@ -82,8 +82,8 @@ variable "webmodeler_postgres" {
   })
 }
 
-variable "webmodeler_mail_from_address" {
-  description = "Sender address of emails sent by Web Modeler. Required by the chart."
+variable "hub_mail_from_address" {
+  description = "Sender address of emails sent by Camunda Hub. Required by the chart."
   type        = string
 }
 

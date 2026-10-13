@@ -13,5 +13,7 @@ resource "helm_release" "camunda" {
 
   values = [yamlencode(local.camunda_values)]
 
+  timeout = 900
+
   depends_on = [kubectl_manifest.external_secret]
 }

@@ -1,6 +1,7 @@
 locals {
   camunda_url    = "https://${var.hostname}"
   keycloak_realm = "camunda-platform"
+  hub_path       = "/hub"
 
   camunda_values = {
     global = {
@@ -44,15 +45,8 @@ locals {
               existingSecretKey = "identityOptimize"
             }
           }
-          webModeler = {
-            redirectUrl = "${local.camunda_url}/modeler"
-          }
-          console = {
-            redirectUrl = "${local.camunda_url}/console"
-            secret = {
-              existingSecret    = local.camunda_passwords_secret
-              existingSecretKey = "identityConsole"
-            }
+          camundaHub = {
+            redirectUrl = "${local.camunda_url}${local.hub_path}"
           }
         }
       }
@@ -85,6 +79,10 @@ locals {
           }
         }
       }
+      env = [{
+        name  = "CAMUNDA_CLIENT_AUTH_TOKENFETCHNONRETRYABLECOOLDOWN"
+        value = "30s"
+      }]
     }
 
     orchestration = {
@@ -132,23 +130,33 @@ locals {
           }
         }
       }
+      extraConfiguration = [{
+        file = "application-replicas.yaml"
+        content = yamlencode({
+          camunda = { data = { "secondary-storage" = { opensearch = { "number-of-replicas" = 0 } } } }
+          zeebe   = { broker = { exporters = { opensearch = { args = { index = { numberOfReplicas = 0 } } } } } }
+        })
+      }]
     }
 
-    webModeler = {
+    camundaHub = {
       enabled     = true
-      contextPath = "/modeler"
+      contextPath = local.hub_path
       restapi = {
-        mail = {
-          fromAddress = var.webmodeler_mail_from_address
-        }
         externalDatabase = {
-          url  = "jdbc:postgresql://${var.webmodeler_postgres.host}:${var.webmodeler_postgres.port}/${var.webmodeler_postgres.database}"
-          user = var.webmodeler_postgres.username
+          url      = "jdbc:postgresql://${var.hub_postgres.host}:${var.hub_postgres.port}/${var.hub_postgres.database}"
+          username = var.hub_postgres.username
           secret = {
-            existingSecret    = local.postgres_webmodeler_credentials_secret
+            existingSecret    = local.postgres_hub_credentials_secret
             existingSecretKey = "password"
           }
         }
+        extraConfiguration = [{
+          file = "application-mail.yaml"
+          content = yamlencode({
+            camunda = { hub = { mail = { "from-address" = var.hub_mail_from_address } } }
+          })
+        }]
       }
     }
 
@@ -172,11 +180,12 @@ locals {
           }
         }
       }
-    }
-
-    console = {
-      enabled     = true
-      contextPath = "/console"
+      extraConfiguration = [{
+        file = "application-replicas.yaml"
+        content = yamlencode({
+          opensearch = { settings = { index = { number_of_replicas = 0 } } }
+        })
+      }]
     }
   }
 }

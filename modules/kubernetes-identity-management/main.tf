@@ -52,6 +52,8 @@ resource "kubectl_manifest" "keycloak" {
       }
     }
   })
+
+  depends_on = [kubectl_manifest.external_secret]
 }
 
 resource "kubectl_manifest" "keycloak_httproute" {

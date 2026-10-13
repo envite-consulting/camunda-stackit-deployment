@@ -3,7 +3,7 @@ locals {
   # streams without traffic (default 5m). See https://www.envoyproxy.io/docs/envoy/latest/faq/configuration/timeouts
   backend_timeouts = {
     # Web applications and REST API. 15s is too short for long-running requests such as REST job activation with
-    # long polling. WebSockets of Web Modeler (/modeler-ws) are not affected: the route timeout only starts once
+    # long polling. WebSockets of Camunda Hub (/hub-ws) are not affected: the route timeout only starts once
     # the request is complete, and an upgraded connection never completes.
     (var.gateway_listener_names.web) = {
       requestTimeout = "300s"
