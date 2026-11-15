@@ -4,7 +4,19 @@
 [![Terraform](https://img.shields.io/badge/Terraform-5835CC)](https://developer.hashicorp.com/terraform/tutorials?product_intent=terraform)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/envite-consulting/camunda-stackit-deployment)
 
-Provision of reference configurations and examples for deploying Camunda 8 on [STACKIT](https://stackit.com/en). This repository builds up on the official [Camunda Deployment References](https://github.com/camunda/camunda-deployment-references/tree/stable/8.9?tab=readme-ov-file) with specific instructions, infrastructure templates, and best practices for STACKIT.
+Reference implementation for running Camunda 8 Self-Managed on [STACKIT](https://stackit.com/en). It builds on the official [Camunda Deployment References](https://github.com/camunda/camunda-deployment-references/tree/main) and adds the infrastructure templates and instructions needed for STACKIT.
+
+## Purpose and scope
+
+Like the Camunda Deployment References, this repository is meant to be used in two ways:
+
+1. **Reference:** Use it as guidance when building your own Camunda setup on STACKIT, for example to see which STACKIT services Camunda and its dependencies can run on and how they fit together. Often you already have your own infrastructure and only need help with the missing parts, or want to check whether your existing setup is heading in the right direction.
+2. **Starting point:** Copy the repository as it is and use it as the foundation for your own project. Adapt and extend it to your requirements.
+
+> [!WARNING]
+> This project is intended for demonstration and learning purposes. It is not meant to be used in production as it is, and it comes without any guarantees or warranties (see [LICENSE](LICENSE)).
+>
+> The default sizing is deliberately minimal: a single Zeebe broker in one availability zone and no index replicas. Topics that depend heavily on your organisation are left out on purpose, such as GitOps (Argo CD, Flux), CI/CD and credential handling, high availability across zones, observability, network hardening and backup automation. Comments in the code explain where the setup deviates from the defaults.
 
 ## Camunda versions
 
