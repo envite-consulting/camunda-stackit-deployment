@@ -65,7 +65,7 @@
     },
     {
       "title": "Provider and Version Configuration",
-      "purpose": "Covers versions.tf: Terraform version lock (1.16.3), provider version constraints (stackit ~>0.117, helm, kubernetes, kubectl, vault), S3 backend configuration, and the provider dependency chain that ties SKE and Secrets Manager outputs to application-layer providers.",
+      "purpose": "Covers versions.tf: Terraform version constraint (>= 1.10.0, < 2.0.0), provider version constraints (stackit ~>0.117, helm, kubernetes, kubectl, vault), S3 backend configuration, and the provider dependency chain that ties SKE and Secrets Manager outputs to application-layer providers.",
       "parent": "Environment Configuration",
       "page_notes": [
         {

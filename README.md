@@ -53,7 +53,7 @@ Like the Camunda Deployment References, this repository is meant to be used in t
 
 Documentation: [Install Terraform](https://developer.hashicorp.com/terraform/install)
 
-Required version: "1.16.3"
+Required version: ">= 1.10.0, < 2.0.0" (1.10 is the minimum because the S3 backend uses native state locking via `use_lockfile`)
 
 ### `STACKIT CLI` Installation
 

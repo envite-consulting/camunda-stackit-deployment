@@ -22,7 +22,7 @@ variable "dns_name" {
 variable "kubernetes_version_min" {
   description = "Minimum Kubernetes version for the SKE cluster."
   type        = string
-  default     = "1.34"
+  default     = "1.36"
 }
 
 variable "ske_machine_type" {
